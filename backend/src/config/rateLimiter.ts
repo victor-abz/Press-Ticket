@@ -65,6 +65,18 @@ export const forgotPasswordLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// Rate limiter dedicado para POST /auth/login (proteção contra brute force por IP)
+export const loginRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minuto
+  max: 5,
+  message: {
+    error: "Muitas tentativas de login. Aguarde 1 minuto antes de tentar novamente."
+  },
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 // Rate limiter para health check — permissivo para monitoring tools, mas com teto
 export const healthLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minuto

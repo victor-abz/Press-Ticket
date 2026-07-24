@@ -134,8 +134,12 @@ const useAuth = () => {
             navigate("/tickets");
             setLoading(false);
         } catch (err) {
-            toastError(err);
             setLoading(false);
+            const status = err?.response?.status;
+            if (status === 423 || status === 429) {
+                throw err;
+            }
+            toastError(err);
         }
     };
 

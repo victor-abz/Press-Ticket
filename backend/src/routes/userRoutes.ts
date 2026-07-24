@@ -7,7 +7,11 @@ const userRoutes = Router();
 
 userRoutes.get("/users", isAuth, UserController.index);
 
+userRoutes.get("/users/locked", isAuth, UserController.listLocked);
+
 userRoutes.post("/users", isAuth, UserController.store);
+
+userRoutes.post("/users/:userId/unlock", isAuth, UserController.unlockUser);
 
 userRoutes.put("/users/:userId", isAuth, UserController.update);
 

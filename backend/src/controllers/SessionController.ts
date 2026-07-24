@@ -24,7 +24,8 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 
   const { token, serializedUser, refreshToken } = await AuthUserService({
     email,
-    password
+    password,
+    ip: clientIp
   });
 
   await createActivityLog({

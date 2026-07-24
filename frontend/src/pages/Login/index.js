@@ -1,3 +1,5 @@
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -18,7 +20,6 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink } from "react-router-dom";
-import { toast } from "react-toastify";
 import { getImageUrl } from '../../helpers/imageHelper';
 import { AuthContext } from "../../context/Auth/AuthContext";
 import toastError from "../../errors/toastError";
@@ -115,6 +116,7 @@ const Login = () => {
   const { t } = useTranslation();
   const [user, setUser] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [loginAlert, setLoginAlert] = useState(null);
   const { handleLogin } = useContext(AuthContext);
   const [theme, setTheme] = useState("light");
   const [companyData, setCompanyData] = useState({
@@ -192,13 +194,17 @@ const Login = () => {
 
   const handlSubmit = async (e) => {
     e.preventDefault();
+    setLoginAlert(null);
     try {
       await handleLogin(user);
     } catch (err) {
-      if (err.response?.data?.error) {
-        toast.error(err.response.data.error);
-      } else {
-        toast.error("Erro ao realizar login. Tente novamente.");
+      const status = err.response?.status;
+      const message = err.response?.data?.error;
+
+      if (status === 423) {
+        setLoginAlert({ severity: "warning", title: t("login.accountLocked"), message });
+      } else if (status === 429) {
+        setLoginAlert({ severity: "error", title: t("login.tooManyRequests"), message });
       }
     }
   };
@@ -314,6 +320,13 @@ const Login = () => {
                 </Grid>
               </LinksContainer>
             </StyledForm>
+
+            {loginAlert && (
+              <Alert severity={loginAlert.severity} sx={{ mt: 2, borderRadius: 2 }}>
+                <AlertTitle>{loginAlert.title}</AlertTitle>
+                {loginAlert.message}
+              </Alert>
+            )}
           </CardContent>
         </LoginCard>
         

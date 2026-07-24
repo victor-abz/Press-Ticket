@@ -88,6 +88,17 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   @Column(DataType.DATE)
   lastLoginAt: CreationOptional<Date>;
 
+  @Default(0)
+  @Column(DataType.INTEGER)
+  loginAttempts: CreationOptional<number>;
+
+  @Column(DataType.DATE)
+  lockedUntil: Date | null;
+
+  @Default(0)
+  @Column(DataType.INTEGER)
+  lockCount: CreationOptional<number>;
+
   @CreatedAt
   declare createdAt: CreationOptional<Date>;
 

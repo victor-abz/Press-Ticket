@@ -26,17 +26,21 @@ import Search from "@mui/icons-material/Search";
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import HighlightOff from "@mui/icons-material/HighlightOff";
-import { useEffect, useReducer, useState } from "react";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import { useContext, useEffect, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
+import { Can } from "../../components/Can";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import LockedUsersModal from "../../components/LockedUsersModal";
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
 import MainHeaderButtonsWrapper from "../../components/MainHeaderButtonsWrapper";
 import TableRowSkeleton from "../../components/TableRowSkeleton";
 import Title from "../../components/Title";
 import UserModal from "../../components/UserModal";
+import { AuthContext } from "../../context/Auth/AuthContext";
 import toastError from "../../errors/toastError";
 import api from "../../services/api";
 import openSocket from "../../services/socket-io";
@@ -168,6 +172,7 @@ const Users = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = location.state?.user;
+  const { user: loggedInUser } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -183,6 +188,7 @@ const Users = () => {
   const [modalTitle, setModalTitle] = useState("");
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedUserSchedule, setSelectedUserSchedule] = useState(null);
+  const [lockedUsersModalOpen, setLockedUsersModalOpen] = useState(false);
 
   useEffect(() => {
     dispatch({ type: "RESET" });
@@ -469,6 +475,10 @@ const Users = () => {
         aria-labelledby="form-dialog-title"
         userId={selectedUsers.length === 1 ? selectedUsers[0] : null}
       />
+      <LockedUsersModal
+        open={lockedUsersModalOpen}
+        onClose={() => setLockedUsersModalOpen(false)}
+      />
       <MainHeader>
         <Title>{t("users.title")} {users.length > 0 ? `(${users.length})` : ""}</Title>
         <MainHeaderButtonsWrapper sx={{ display: 'flex', alignItems: 'center' }}>
@@ -498,7 +508,34 @@ const Users = () => {
               }}
             />
           </SearchContainer>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Can
+              role={loggedInUser?.profile}
+              perform="locked-users:view"
+              yes={() => (
+                <Tooltip title={t("lockedUsers.title")}>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => setLockedUsersModalOpen(true)}
+                    sx={{
+                      borderRadius: 2,
+                      px: { xs: 1, sm: 2 },
+                      height: '40px',
+                      minWidth: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      '& .MuiSvgIcon-root': {
+                        fontSize: '1.25rem'
+                      }
+                    }}
+                  >
+                    <LockOutlinedIcon />
+                  </Button>
+                </Tooltip>
+              )}
+            />
             <Tooltip title={t("users.buttons.add")}>
               <Button
                 variant="contained"

@@ -29,8 +29,8 @@ class ActivityLog extends Model<
   declare id: CreationOptional<number>;
 
   @ForeignKey(() => User)
-  @Column
-  userId: number;
+  @Column(DataType.INTEGER)
+  userId: number | null;
 
   @BelongsTo(() => User)
   declare user: NonAttribute<User>;

@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { Op } from "sequelize";
 import { getIO } from "../libs/socket";
 
 import AppError from "../errors/AppError";
@@ -9,6 +10,7 @@ import DeleteUserService from "../services/UserServices/DeleteUserService";
 import ListUsersService from "../services/UserServices/ListUsersService";
 import ShowUserService from "../services/UserServices/ShowUserService";
 import UpdateUserService from "../services/UserServices/UpdateUserService";
+import User from "../models/User";
 import {
   createActivityLog,
   ActivityActions,
@@ -193,4 +195,61 @@ export const remove = async (
   });
 
   return res.status(200).json({ message: "User deleted" });
+};
+
+export const listLocked = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  if (req.user.profile !== "admin" && req.user.profile !== "masteradmin") {
+    throw new AppError("ERR_NO_PERMISSION", 403);
+  }
+
+  const users = await User.findAll({
+    where: { lockedUntil: { [Op.gt]: new Date() } },
+    attributes: [
+      "id",
+      "name",
+      "email",
+      "lockedUntil",
+      "lockCount",
+      "loginAttempts"
+    ],
+    order: [["lockedUntil", "DESC"]]
+  });
+
+  return res.status(200).json(users);
+};
+
+export const unlockUser = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  if (req.user.profile !== "admin" && req.user.profile !== "masteradmin") {
+    throw new AppError("ERR_NO_PERMISSION", 403);
+  }
+
+  const { userId } = req.params;
+
+  const user = await User.findByPk(userId);
+
+  if (!user) {
+    throw new AppError("ERR_NO_USER_FOUND", 404);
+  }
+
+  await user.update({ loginAttempts: 0, lockedUntil: null, lockCount: 0 });
+
+  const clientIp = GetClientIp(req);
+  const logUserId = req.user?.id || 1;
+
+  await createActivityLog({
+    userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
+    action: ActivityActions.ACCOUNT_UNLOCKED,
+    description: `Conta de ${user.name} (${user.email}) desbloqueada manualmente por administrador`,
+    entityType: EntityTypes.USER,
+    entityId: user.id,
+    ip: clientIp
+  });
+
+  return res.status(200).json({ message: "Conta desbloqueada com sucesso." });
 };

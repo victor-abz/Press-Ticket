@@ -345,6 +345,8 @@ const messages = {
             submit: "Iniciar sesión",
             register: "¿No tienes cuenta? ¡Regístrate!",
           },
+          accountLocked: "Cuenta bloqueada temporalmente",
+          tooManyRequests: "Demasiados intentos de inicio de sesión",
         },
         mainDrawer: {
           listItems: {
@@ -976,6 +978,7 @@ const messages = {
           },
           buttons: {
             add: "Agregar agente",
+            close: "Cerrar",
           },
           modalTitle: {
             channel: "Canales",
@@ -993,6 +996,20 @@ const messages = {
             deleteTitle: "Eliminar",
             deleteMessage: "Todos los datos de este agente se perderán. Los tickets abiertos por este agente se moverán a pendientes.",
           },
+        },
+        lockedUsers: {
+          title: "Cuentas Bloqueadas",
+          empty: "No hay cuentas bloqueadas en este momento.",
+          columns: {
+            name: "Nombre",
+            email: "Correo electrónico",
+            lockedUntil: "Bloqueada hasta",
+            lockCount: "Nº de bloqueos",
+            actions: "Acciones"
+          },
+          unlock: "Desbloquear",
+          unlockSuccess: "Cuenta desbloqueada con éxito.",
+          unlockError: "Error al desbloquear la cuenta. Inténtalo de nuevo."
         },
         userModal: {
           title: {

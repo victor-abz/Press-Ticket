@@ -345,6 +345,8 @@ const messages = {
           submit: "Login",
           register: "Don't have an account? Sign up!",
         },
+        accountLocked: "Account temporarily locked",
+        tooManyRequests: "Too many login attempts",
       },
       mainDrawer: {
         listItems: {
@@ -997,6 +999,7 @@ const messages = {
         },
         buttons: {
           add: "Add agent",
+          close: "Close",
         },
         modalTitle: {
           channel: "Channels",
@@ -1014,6 +1017,20 @@ const messages = {
           deleteTitle: "Delete",
           deleteMessage: "All data for this agent will be lost. Tickets opened by this agent will be moved to pending.",
         },
+      },
+      lockedUsers: {
+        title: "Locked Accounts",
+        empty: "No locked accounts at the moment.",
+        columns: {
+          name: "Name",
+          email: "Email",
+          lockedUntil: "Locked until",
+          lockCount: "Lock count",
+          actions: "Actions"
+        },
+        unlock: "Unlock",
+        unlockSuccess: "Account unlocked successfully.",
+        unlockError: "Error unlocking account. Please try again."
       },
       userModal: {
         title: {

@@ -25,6 +25,9 @@ erDiagram
         string  whatsappNumber
         string  currentSessionId
         date    lastLoginAt
+        int     loginAttempts
+        date    lockedUntil
+        int     lockCount
     }
 
     CONTACT {

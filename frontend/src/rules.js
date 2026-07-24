@@ -18,7 +18,8 @@ const rules = {
 			"documentation-api:view",
 			"documentation-system:view",
 			"documentation-maintenance:view",
-			"videos:create"
+			"videos:create",
+			"locked-users:view"
 		],
 	},
 	masteradmin: {
@@ -37,7 +38,8 @@ const rules = {
 			"documentation-admin:view",
 			"documentation-api:view",
 			"documentation-system:view",
-			"documentation-maintenance:view"
+			"documentation-maintenance:view",
+			"locked-users:view"
 		],
 	}
 };

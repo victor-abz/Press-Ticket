@@ -36,7 +36,10 @@ export enum ActivityActions {
   REACT = "react",
   BLOCK = "block",
   UNBLOCK = "unblock",
-  SYSTEM = "system"
+  SYSTEM = "system",
+  LOGIN_FAILED = "login_failed",
+  ACCOUNT_LOCKED = "account_locked",
+  ACCOUNT_UNLOCKED = "account_unlocked"
 }
 
 export enum EntityTypes {
@@ -58,7 +61,7 @@ export enum EntityTypes {
 }
 
 interface LogRequest {
-  userId: number;
+  userId: number | null;
   action: ActivityActions | string;
   description: string;
   entityType?: EntityTypes | string;

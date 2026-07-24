@@ -1,13 +1,24 @@
 import { Router } from "express";
 import * as SessionController from "../controllers/SessionController";
 import * as UserController from "../controllers/UserController";
-import { authLimiter, forgotPasswordLimiter } from "../config/rateLimiter";
+import {
+  authLimiter,
+  forgotPasswordLimiter,
+  loginRateLimiter
+} from "../config/rateLimiter";
 
 const authRoutes = Router();
 
 // Aplicar rate limiter apenas em rotas de autenticação sensíveis
 authRoutes.post("/signup", authLimiter, UserController.store);
-authRoutes.post("/login", authLimiter, SessionController.store);
+// loginRateLimiter (5/min) roda primeiro: rejeita rápido e barato antes de
+// consumir o contador mais amplo do authLimiter (5-50/15min conforme env)
+authRoutes.post(
+  "/login",
+  loginRateLimiter,
+  authLimiter,
+  SessionController.store
+);
 authRoutes.post(
   "/forgot-password",
   forgotPasswordLimiter,

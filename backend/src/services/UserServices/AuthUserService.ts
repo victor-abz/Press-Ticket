@@ -10,10 +10,26 @@ import Queue from "../../models/Queue";
 import User from "../../models/User";
 import UserSession from "../../models/UserSession";
 import sequelize from "../../database";
+import {
+  createActivityLog,
+  ActivityActions,
+  EntityTypes
+} from "../ActivityLogService";
+import NotifyAccountLockedService from "../AuthServices/NotifyAccountLockedService";
+
+const MAX_LOGIN_ATTEMPTS = 10;
+const BASE_LOCKOUT_MINUTES = 15;
+const MAX_LOCKOUT_MINUTES = 24 * 60;
+
+const getLockoutDurationMinutes = (lockCount: number): number => {
+  const minutes = BASE_LOCKOUT_MINUTES * 2 ** lockCount;
+  return Math.min(minutes, MAX_LOCKOUT_MINUTES);
+};
 
 interface Request {
   email: string;
   password: string;
+  ip?: string;
 }
 
 interface Response {
@@ -36,7 +52,8 @@ interface Response {
 
 const AuthUserService = async ({
   email,
-  password
+  password,
+  ip = "unknown"
 }: Request): Promise<Response> => {
   const user = await User.findOne({
     where: { email },
@@ -44,7 +61,27 @@ const AuthUserService = async ({
   });
 
   if (!user) {
+    await createActivityLog({
+      userId: null,
+      action: ActivityActions.LOGIN_FAILED,
+      description: `Tentativa de login para e-mail não cadastrado`,
+      entityType: EntityTypes.USER,
+      ip,
+      additionalData: { email }
+    });
+
     throw new AppError("ERR_INVALID_CREDENTIALS", 401);
+  }
+
+  if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
+    const remainingMinutes = Math.ceil(
+      (user.lockedUntil.getTime() - Date.now()) / 60000
+    );
+
+    throw new AppError(
+      `Conta temporariamente bloqueada por excesso de tentativas de login. Tente novamente em ${remainingMinutes} minuto(s).`,
+      423
+    );
   }
 
   if (!user.active) {
@@ -72,7 +109,54 @@ const AuthUserService = async ({
   }
 
   if (!(await user.checkPassword(password))) {
+    const loginAttempts = user.loginAttempts + 1;
+
+    if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+      const lockoutMinutes = getLockoutDurationMinutes(user.lockCount);
+      const lockedUntil = new Date(Date.now() + lockoutMinutes * 60000);
+      const lockCount = user.lockCount + 1;
+
+      await user.update({
+        loginAttempts: 0,
+        lockedUntil,
+        lockCount
+      });
+
+      await createActivityLog({
+        userId: user.id,
+        action: ActivityActions.ACCOUNT_LOCKED,
+        description: `Conta bloqueada após ${MAX_LOGIN_ATTEMPTS} tentativas de login falhas`,
+        entityType: EntityTypes.USER,
+        entityId: user.id,
+        ip,
+        additionalData: { lockedUntil, lockCount }
+      });
+
+      await NotifyAccountLockedService({ user, lockedUntil });
+
+      throw new AppError(
+        `Conta bloqueada por ${lockoutMinutes} minuto(s) devido a múltiplas tentativas de login falhas. Você receberá um e-mail com mais informações.`,
+        423
+      );
+    }
+
+    await user.update({ loginAttempts });
+
+    await createActivityLog({
+      userId: user.id,
+      action: ActivityActions.LOGIN_FAILED,
+      description: `Tentativa de login falhou (tentativa ${loginAttempts}/${MAX_LOGIN_ATTEMPTS})`,
+      entityType: EntityTypes.USER,
+      entityId: user.id,
+      ip,
+      additionalData: { loginAttempts }
+    });
+
     throw new AppError("ERR_INVALID_CREDENTIALS", 401);
+  }
+
+  if (user.loginAttempts > 0 || user.lockedUntil) {
+    await user.update({ loginAttempts: 0, lockedUntil: null });
   }
 
   let sessionTimeoutHours = 8;

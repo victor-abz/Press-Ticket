@@ -846,6 +846,8 @@ const messages = {
           submit: "Fazer login",
           register: "Não tem uma conta? Cadastre-se!",
         },
+        accountLocked: "Conta bloqueada temporariamente",
+        tooManyRequests: "Muitas tentativas de login",
       },
       mainDrawer: {
         listItems: {
@@ -1913,6 +1915,20 @@ const messages = {
           edit: "Editar",
           delete: "Excluir",
         }
+      },
+      lockedUsers: {
+        title: "Contas Bloqueadas",
+        empty: "Nenhuma conta bloqueada no momento.",
+        columns: {
+          name: "Nome",
+          email: "E-mail",
+          lockedUntil: "Bloqueada até",
+          lockCount: "Nº de bloqueios",
+          actions: "Ações"
+        },
+        unlock: "Desbloquear",
+        unlockSuccess: "Conta desbloqueada com sucesso.",
+        unlockError: "Erro ao desbloquear conta. Tente novamente."
       },
       userModal: {
         title: {
