@@ -24,6 +24,11 @@ contactRoutes.get(
   ContactController.getAbout
 );
 contactRoutes.get(
+  "/contacts/:contactId/export",
+  isAuth,
+  ContactController.exportContactData
+);
+contactRoutes.get(
   "/contacts/:contactId/common-groups",
   isAuth,
   ContactController.getCommonGroups

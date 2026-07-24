@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx tsc *)",
+      "WebFetch(domain:app.notificame.com.br)",
+      "WebFetch(domain:hub.notificame.com.br)",
+      "Bash(Get-ChildItem -Recurse -Path src\\\\components -Filter \"*mail*\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object FullName)",
+      "Bash(npm install *)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npx eslint *)",
+      "Bash(cat .eslintrc.js)",
+      "Bash(cat .eslintrc.json)",
+      "Bash(cat .eslintrc)",
+      "Bash(node -e \"const pkg = require\\('./node_modules/@typescript-eslint/eslint-plugin/package.json'\\); console.log\\(pkg.version\\)\")",
+      "Bash(node -e \"require\\('d:/Projetos/backup_dev/dev/backend/.eslintrc.json'\\); console.log\\('JSON valid'\\)\")",
+      "Bash(node -e \"const { Linter } = require\\('eslint'\\); const l = new Linter\\(\\); const cfg = l.getRules\\(\\); console.log\\('has no-unused-vars:', cfg.has\\('@typescript-eslint/no-unused-vars'\\)\\)\")",
+      "Bash(Get-ChildItem -Path \"d:\\\\Projetos\\\\backup_dev\\\\dev\" -Recurse -Filter \"*.ts\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(npx prettier *)",
+      "Bash(Select-String -Pattern \"\\\\berror\\\\b\")",
+      "Bash(Select-Object -First 20)",
+      "Bash(sed -n '55,75p' src/services/ContactServices/ListContactsService.ts)",
+      "Bash(sed -n '20,35p' src/services/ContactServices/ExportContactsService.ts)",
+      "Bash(sed -n '155,165p' src/services/ActivityLogService.ts)",
+      "Bash(sed -n '185,200p' src/services/ActivityLogService.ts)",
+      "Bash(sed -n '50,60p' src/services/TicketServices/ListTicketsService.ts)",
+      "Bash(sed -n '24,35p' src/services/ContactServices/ExportContactsService.ts)",
+      "Bash(sed -n '125,165p' src/services/ActivityLogService.ts)",
+      "Bash(sed -n '55,70p' src/services/QueueMonitorService/index.ts)",
+      "Bash(awk '/^D:|^\\\\//{file=$0} /no-explicit-any/{count[file]++} END{for\\(f in count\\) print count[f], f}')",
+      "Bash(Get-ChildItem -Path \"d:\\\\Projetos\\\\backup_dev\\\\dev\\\\backend\\\\src\\\\models\\\\\" -Filter \"*.ts\" | Select-Object Name)"
+    ]
+  }
+}

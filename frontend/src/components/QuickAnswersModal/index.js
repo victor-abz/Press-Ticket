@@ -83,14 +83,22 @@ const ExampleBox = styled(Box)(({ theme }) => ({
   color: theme.palette.text.primary,
 }));
 
+const SHORTCUT_MAX_LENGTH = 50;
+const MESSAGE_MAX_LENGTH = 30000;
+
+const charCounterSx = (length, max) => ({
+  textAlign: "right",
+  color: length >= max ? "error.main" : length >= max * 0.9 ? "warning.main" : "text.secondary",
+});
+
 const QuickAnswerSchema = Yup.object().shape({
   shortcut: Yup.string()
     .min(2, "Too Short!")
-    .max(50, "Too Long!")
+    .max(SHORTCUT_MAX_LENGTH, "Too Long!")
     .required("Required"),
   message: Yup.string()
     .min(8, "Too Short!")
-    .max(30000, "Too Long!")
+    .max(MESSAGE_MAX_LENGTH, "Too Long!")
     .required("Required"),
 });
 
@@ -294,6 +302,7 @@ const QuickAnswersModal = ({
                       onChange={(e) => setFieldValue("shortcut", e.target.value)}
                       disabled={isSubmitting}
                       placeholder={t("quickAnswersModal.form.shortcut")}
+                      inputProps={{ maxLength: SHORTCUT_MAX_LENGTH }}
                     />
                   </WithSkeleton>
                 </FieldContainer>
@@ -367,6 +376,14 @@ const QuickAnswersModal = ({
                       onChange={(e) => setFieldValue("message", e.target.value)}
                       disabled={isSubmitting}
                       placeholder={t("quickAnswersModal.form.message")}
+                      inputProps={{ maxLength: MESSAGE_MAX_LENGTH }}
+                      helperText={
+                        (touched.message && errors.message) ||
+                        `${(values.message || "").length} / ${MESSAGE_MAX_LENGTH}`
+                      }
+                      FormHelperTextProps={{
+                        sx: charCounterSx((values.message || "").length, MESSAGE_MAX_LENGTH)
+                      }}
                     />
                   </WithSkeleton>
                 </FieldContainer>

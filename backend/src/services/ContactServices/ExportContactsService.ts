@@ -3,6 +3,7 @@ import Contact from "../../models/Contact";
 import Tag from "../../models/Tag";
 import ContactTag from "../../models/ContactTag";
 import ContactCustomField from "../../models/ContactCustomField";
+import { escapeLikeValue } from "../../helpers/escapeLikeValue";
 
 interface Request {
   searchParam?: string;
@@ -24,22 +25,25 @@ const ExportContactsService = async ({
   const whereCondition: Record<PropertyKey, unknown> = {};
 
   if (searchParam) {
+    const sanitizedSearchParam = escapeLikeValue(
+      searchParam.toLowerCase().trim()
+    );
     whereCondition[Op.or] = [
       {
         name: Sequelize.where(
           Sequelize.fn("LOWER", Sequelize.col("Contact.name")),
           "LIKE",
-          `%${searchParam.toLowerCase().trim()}%`
+          `%${sanitizedSearchParam}%`
         )
       },
       {
-        number: { [Op.like]: `%${searchParam.toLowerCase().trim()}%` }
+        number: { [Op.like]: `%${sanitizedSearchParam}%` }
       },
       {
         email: Sequelize.where(
           Sequelize.fn("LOWER", Sequelize.col("Contact.email")),
           "LIKE",
-          `%${searchParam.toLowerCase().trim()}%`
+          `%${sanitizedSearchParam}%`
         )
       }
     ];

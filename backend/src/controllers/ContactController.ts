@@ -5,6 +5,7 @@ import { getIO } from "../libs/socket";
 import CreateContactService from "../services/ContactServices/CreateContactService";
 import DeleteAllContactService from "../services/ContactServices/DeleteAllContactService";
 import DeleteContactService from "../services/ContactServices/DeleteContactService";
+import ExportContactDataService from "../services/ContactServices/ExportContactDataService";
 import ExportContactsService from "../services/ContactServices/ExportContactsService";
 import GetAboutService from "../services/ContactServices/GetAboutService";
 import GetCommonGroupsService from "../services/ContactServices/GetCommonGroupsService";
@@ -472,7 +473,7 @@ export const remove = async (
 ): Promise<Response> => {
   const { contactId } = req.params;
 
-  const contactToDelete = await ShowContactService(contactId);
+  await ShowContactService(contactId);
 
   await DeleteContactService(contactId);
   const logUserId = req.user?.id || 1;
@@ -480,13 +481,11 @@ export const remove = async (
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
     action: ActivityActions.DELETE,
-    description: `Contato ${contactToDelete.name} (${contactToDelete.number}) excluído`,
+    description: "Contato excluído",
     entityType: EntityTypes.CONTACT,
     entityId: parseInt(contactId),
     additionalData: {
-      name: contactToDelete.name,
-      number: contactToDelete.number,
-      email: contactToDelete.email
+      contactId: parseInt(contactId)
     }
   });
 
@@ -700,6 +699,41 @@ export const exportContacts = async (
   } catch (err) {
     logger.error(`Erro ao exportar contatos: ${err}`);
     return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const exportContactData = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  if (req.user.profile !== "admin" && req.user.profile !== "masteradmin") {
+    throw new AppError("ERR_NO_PERMISSION", 403);
+  }
+
+  const { contactId } = req.params;
+  const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
+
+  try {
+    const exportData = await ExportContactDataService(contactId);
+
+    await createActivityLog({
+      userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
+      action: ActivityActions.EXPORT,
+      description: "Dados do contato exportados (titular de dados)",
+      entityType: EntityTypes.CONTACT,
+      entityId: parseInt(contactId),
+      ip: clientIp,
+      additionalData: { contactId: parseInt(contactId) }
+    });
+
+    return res.status(200).json(exportData);
+  } catch (err: unknown) {
+    if (err instanceof AppError) {
+      return res.status(err.statusCode).json({ error: err.message });
+    }
+    logger.error(`Erro ao exportar dados do contato ${contactId}: ${err}`);
+    return res.status(500).json({ error: "ERR_INTERNAL_SERVER_ERROR" });
   }
 };
 

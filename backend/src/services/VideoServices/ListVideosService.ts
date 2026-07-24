@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import Video from "../../models/Video";
 import User from "../../models/User";
+import { escapeLikeValue } from "../../helpers/escapeLikeValue";
 
 interface Request {
   searchParam?: string;
@@ -22,7 +23,7 @@ const ListVideosService = async ({
 
   if (searchParam) {
     whereCondition = {
-      [Op.or]: [{ title: { [Op.like]: `%${searchParam}%` } }]
+      [Op.or]: [{ title: { [Op.like]: `%${escapeLikeValue(searchParam)}%` } }]
     };
   }
 

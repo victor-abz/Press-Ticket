@@ -190,18 +190,23 @@ const GroupActionsPanel = ({ groupId }) => {
         notify(t("groupActions.messages.addOk"));
       } else if (successCount > 0 && failCount > 0) {
         const invited = summary.filter(s => s.isInviteV4Sent).length;
-        const msgs = [];
-        msgs.push(`${successCount} adicionado(s)`);
-        if (invited) msgs.push(`${invited} convite(s) enviado(s)`);
-        if (failCount - invited > 0) msgs.push(`${failCount - invited} falha(s)`);
-        notify(msgs.join(", "), "warning");
+        notify(
+          t("groupActions.messages.addPartialSuccess", {
+            success: successCount,
+            invited,
+            failed: failCount - invited,
+          }),
+          "warning"
+        );
       } else if (failCount > 0) {
         const invited = summary.filter(s => s.isInviteV4Sent).length;
         if (invited > 0) {
-          notify(`${invited} convite(s) enviado(s) por link privado`, "info");
+          notify(t("groupActions.messages.addInviteOnly", { invited }), "info");
         } else {
           const firstFail = summary.find(s => !s.success);
-          const detail = firstFail ? ` (${firstFail.message || "código " + firstFail.code})` : "";
+          const detail = firstFail
+            ? ` (${firstFail.message || t("groupActions.messages.addFailCode", { code: firstFail.code })})`
+            : "";
           notify(t("groupActions.messages.addErr") + detail, "error");
         }
       } else {

@@ -1,4 +1,5 @@
 import { downloadFiles } from "../../helpers/downloadHubFiles";
+import { sanitizeMessageBody } from "../../helpers/sanitizeMessageBody";
 import Contact from "../../models/Contact";
 import Whatsapp from "../../models/Whatsapp";
 import FindOrCreateTicketService from "../TicketServices/FindOrCreateTicketService";
@@ -198,7 +199,9 @@ const HubMessageListener = async (
       groupContact
     );
 
-    const textCaption = contents.find(c => c.type === "text")?.text || "";
+    const textCaption = sanitizeMessageBody(
+      contents.find(c => c.type === "text")?.text || ""
+    );
     const firstContent = contents[0];
     let caption: string;
     if (
@@ -278,8 +281,8 @@ const HubMessageListener = async (
     } else if (contents[0]?.type === "location") {
       const loc = contents[0];
       const parts: string[] = ["📍 Localização"];
-      if (loc.name) parts.push(loc.name);
-      if (loc.address) parts.push(loc.address);
+      if (loc.name) parts.push(sanitizeMessageBody(loc.name));
+      if (loc.address) parts.push(sanitizeMessageBody(loc.address));
       if (loc.latitude != null && loc.longitude != null) {
         parts.push(
           `https://maps.google.com/?q=${loc.latitude},${loc.longitude}`

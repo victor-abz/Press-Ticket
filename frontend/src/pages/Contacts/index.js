@@ -513,10 +513,13 @@ const Contacts = () => {
   };
 
   const handleimportContact = async () => {
+    setLoading(true);
     try {
       await api.post("/contacts/import");
+      toast.success(t("contacts.toasts.importSuccess"));
       navigate(0);
     } catch (err) {
+      setLoading(false);
       toastError(err, t);
     }
   };

@@ -7,6 +7,7 @@ import Whatsapp from "../models/Whatsapp";
 import Queue from "../models/Queue";
 import Tag from "../models/Tag";
 import Message from "../models/Message";
+import { escapeLikeValue } from "../helpers/escapeLikeValue";
 
 export enum ActivityActions {
   LOGIN = "login",
@@ -156,14 +157,15 @@ export const listActivityLogs = async ({
   }
 
   if (ip && ip !== "") {
-    where.ip = { [Op.like]: `%${ip}%` };
+    where.ip = { [Op.like]: `%${escapeLikeValue(ip)}%` };
   }
 
   if (searchParam && searchParam !== "") {
+    const sanitizedSearchParam = escapeLikeValue(searchParam);
     where[Op.or] = [
-      { description: { [Op.like]: `%${searchParam}%` } },
-      { action: { [Op.like]: `%${searchParam}%` } },
-      { ip: { [Op.like]: `%${searchParam}%` } }
+      { description: { [Op.like]: `%${sanitizedSearchParam}%` } },
+      { action: { [Op.like]: `%${sanitizedSearchParam}%` } },
+      { ip: { [Op.like]: `%${sanitizedSearchParam}%` } }
     ];
   }
 

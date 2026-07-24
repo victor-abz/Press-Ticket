@@ -97,9 +97,16 @@ const messages = {
         toasts: {
           deleted: "¡Contacto eliminado con éxito!",
           deletedAll: "¡Todos los contactos eliminados con éxito!",
+          redirectTicket: "Ya tienes un ticket abierto para este contacto. Redirigiendo...",
+          exportSuccess: "¡Contactos exportados con éxito!",
+          noContactsToExport: "No hay contactos para exportar.",
+          blocked: "Contacto bloqueado en WhatsApp",
+          unblocked: "Contacto desbloqueado en WhatsApp",
+          importSuccess: "¡Contactos sincronizados con éxito!"
         },
         errors: {
-          "ticketAlreadyOpen": "Ya existe un ticket abierto para este contacto, asignado a {{atendente}}."
+          ticketAlreadyOpen: "Ya existe un ticket abierto para este contacto, asignado al Agente: *{{userName}}* en el Canal: *{{userChannel}}* creado el: *{{ticketCreatedAt}}*.",
+          exportError: "Error al exportar contactos."
         },
         searchPlaceholder: "Buscar...",
         confirmationModal: {
@@ -131,9 +138,98 @@ const messages = {
           },
           extraInfo: "Otra información",
         },
+        groupActions: {
+          selectContacts: "Seleccionar contactos",
+          title: "Acciones del Grupo",
+          buttons: {
+            add: "Agregar participantes",
+            remove: "Eliminar participantes",
+            promote: "Promover admins",
+            demote: "Degradar admins",
+            getInvite: "Copiar enlace de invitación",
+            revokeInvite: "Revocar enlace",
+            subject: "Cambiar título",
+            description: "Cambiar descripción",
+            setPicture: "Cambiar foto",
+            deletePicture: "Eliminar foto",
+            leave: "Salir del grupo",
+            listRequests: "Listar solicitudes",
+            approveRequests: "Aprobar solicitudes",
+            rejectRequests: "Rechazar solicitudes"
+          },
+          switches: {
+            memberAddMode: "Solo los admins pueden agregar miembros",
+            announcement: "Solo los admins pueden enviar mensajes",
+            restrict: "Solo los admins pueden editar la información"
+          },
+          prompts: {
+            participantsPlaceholder: "Ingrese IDs separados por coma (ej.: 5511999999999@c.us)",
+            requestersPlaceholder: "Ingrese IDs de los solicitantes (opcional, separados por coma)",
+            subject: "Nuevo asunto del grupo:",
+            description: "Nueva descripción del grupo:",
+            pictureUrl: "URL de la imagen (se descargará y enviará como foto del grupo)"
+          },
+          messages: {
+            addOk: "Participantes agregados (o invitados).",
+            addErr: "Error al agregar participantes.",
+            addPartialSuccess: "{{success}} agregado(s), {{invited}} invitación(es) enviada(s), {{failed}} fallo(s)",
+            addInviteOnly: "{{invited}} invitación(es) enviada(s) por enlace privado",
+            addFailCode: "código {{code}}",
+            removeOk: "Participantes eliminados.",
+            removeErr: "Error al eliminar participantes.",
+            promoteOk: "Participantes promovidos a admin.",
+            promoteErr: "Error al promover participantes.",
+            demoteOk: "Participantes degradados.",
+            demoteErr: "Error al degradar participantes.",
+            inviteCopied: "Enlace de invitación copiado al portapapeles.",
+            inviteErr: "Error al obtener el enlace de invitación.",
+            inviteNone: "No fue posible obtener el código de invitación.",
+            inviteRevoked: "Nuevo enlace generado y copiado.",
+            inviteRevokeErr: "Error al revocar el enlace de invitación.",
+            settingsOk: "Configuración actualizada.",
+            settingsErr: "Error al actualizar la configuración.",
+            subjectOk: "Asunto actualizado.",
+            subjectErr: "Error al actualizar el asunto.",
+            descriptionOk: "Descripción actualizada.",
+            descriptionErr: "Error al actualizar la descripción.",
+            pictureOk: "Foto del grupo actualizada.",
+            pictureErr: "Error al actualizar la foto del grupo.",
+            pictureDelOk: "Foto del grupo eliminada.",
+            pictureDelErr: "Error al eliminar la foto del grupo.",
+            leaveOk: "Se salió del grupo.",
+            leaveErr: "Error al salir del grupo.",
+            noRequests: "Sin solicitudes pendientes.",
+            requestsErr: "Error al listar solicitudes.",
+            requestsApproveOk: "Solicitudes aprobadas.",
+            requestsApproveErr: "Error al aprobar solicitudes.",
+            requestsRejectOk: "Solicitudes rechazadas.",
+            requestsRejectErr: "Error al rechazar solicitudes."
+          },
+          modals: {
+            subjectTitle: "Cambiar Nombre del Grupo",
+            subjectLabel: "Nombre del grupo",
+            descriptionTitle: "Cambiar Descripción del Grupo",
+            descriptionLabel: "Descripción del grupo",
+            removeTitle: "Eliminar Participantes",
+            promoteTitle: "Promover a Admin",
+            demoteTitle: "Degradar Admin",
+            owner: "Dueño",
+            admin: "Admin",
+            noMembers: "No se encontraron miembros",
+            save: "Guardar",
+            cancel: "Cancelar",
+          }
+        },
         copyToClipboard: {
           copy: "Copiar",
           copied: "Copiado"
+        },
+        socketStatus: {
+          connected: "Conectado",
+          disconnected: "Desconectado",
+          disconnectedMessage: "Conexión en tiempo real perdida. Intentando reconectar...",
+          reconnectedMessage: "Conexión en tiempo real restablecida.",
+          serverErrorMessage: "Error recibido del servidor en tiempo real."
         },
         dashboard: {
           messages: {
@@ -329,6 +425,62 @@ const messages = {
             ticket_id: "ID del Ticket",
             queue: "Sector",
             connection: "Canal"
+          }
+        },
+        modalImageContact: {
+          alt: "Imagen del contacto",
+          toolBar: {
+            rotateLeft: "Girar a la izquierda",
+            rotateRight: "Girar a la derecha",
+            zoomIn: "Acercar",
+            zoomOut: "Alejar",
+            resetZoom: "Restablecer zoom",
+            fullscreen: "Pantalla completa",
+            fullscreenExit: "Salir de pantalla completa",
+            copyLink: "Copiar enlace",
+            download: "Descargar imagen"
+          },
+          snackbar: {
+            copyLinkSuccess: "¡Enlace copiado con éxito!",
+            copyLinkError: "Error al copiar el enlace. Inténtalo de nuevo.",
+          }
+        },
+        modalImageCors: {
+          alt: "Imagen del contacto",
+          error: {
+            loadImage: "Error al cargar la imagen"
+          },
+          navigation: {
+            previous: "Imagen anterior",
+            next: "Imagen siguiente"
+          },
+          button: {
+            applyCrop: "Aplicar",
+            cancelCrop: "Cancelar"
+          },
+          dragToCrop: "Arrastra para seleccionar el área de recorte",
+          toolBar: {
+            rotateLeft: "Girar a la izquierda",
+            rotateRight: "Girar a la derecha",
+            zoomIn: "Acercar",
+            zoomOut: "Alejar",
+            resetZoom: "Restablecer zoom",
+            fullscreen: "Pantalla completa",
+            exitFullscreen: "Salir de pantalla completa",
+            copyLink: "Copiar enlace",
+            download: "Descargar imagen",
+            cancelCrop: "Cancelar recorte",
+            cropImage: "Recortar imagen",
+            disableCompare: "Desactivar comparación",
+            compareImages: "Comparar imágenes",
+            downloadImage: "Descargar imagen"
+          },
+          snackbar: {
+            copyLinkSuccess: "¡Enlace copiado con éxito!",
+            copyLinkError: "Error al copiar el enlace. Inténtalo de nuevo.",
+            cropSuccess: "¡Imagen recortada con éxito!",
+            cropError: "Error al recortar la imagen. Inténtalo de nuevo.",
+            invalidCropArea: "Selecciona un área válida para recortar"
           }
         },
         newTicketModal: {
@@ -619,13 +771,20 @@ const messages = {
               company: "¡Datos de la empresa guardados con éxito!",
               logos: "¡Logos guardados con éxito!",
               colors: "¡Colores guardados con éxito!",
+              logoRemoved: "¡Logo eliminado con éxito!",
+              colorsTheme: "¡Colores del tema {{theme}} guardados con éxito!",
             },
             error: {
               invalid: "Error al buscar personalizaciones.",
               company: "Error al guardar datos de la empresa.",
               logos: "Error al guardar el logo.",
+              logoRemove: "Error al eliminar el logo. Inténtalo de nuevo.",
               logs: "Error al guardar la personalización:",
               colors: "Error al guardar colores del tema: "
+            },
+            info: {
+              uploadingLogo: "Enviando imagen...",
+              deletingLogo: "Eliminando logo...",
             },
             tabs: {
               data: "Datos",
@@ -780,7 +939,7 @@ const messages = {
             queue: "Seleccionar sector"
           },
           errors: {
-            ticketAlreadyOpen: "Ya existe un ticket abierto para este contacto con el agente {{atendente}}."
+            ticketAlreadyOpen: "Ya existe un ticket abierto para este contacto, asignado al Agente: *{{userName}}* en el Canal: *{{userChannel}}* creado el: *{{ticketCreatedAt}}*."
           }
         },
         ticketOptionsMenu: {
@@ -908,6 +1067,14 @@ const messages = {
           fullyUpdated: "Su sistema está actualizado con la última versión del repositorio.",
           newVersionAvailable: "Nueva versión {{version}} disponible en GitHub. Haga clic en 'Actualizar vía Git' para actualizar.",
           commitsAheadOfRelease: "Su sistema tiene {{count}} commit(s) más allá de la última release oficial.",
+        },
+        errors: {
+          unauthorized: "Su sesión ha expirado. Inicie sesión nuevamente.",
+          forbidden: "No tiene permiso para realizar esta acción.",
+          notFound: "Recurso no encontrado.",
+          conflict: "Ya existe un registro con estos datos.",
+          serverError: "Error interno del servidor. Inténtelo de nuevo más tarde.",
+          networkError: "Sin conexión con el servidor. Verifique su internet e inténtelo de nuevo."
         },
         backendErrors: {
           ERR_CREATING_MESSAGE: "Error al crear el mensaje en la base de datos.",

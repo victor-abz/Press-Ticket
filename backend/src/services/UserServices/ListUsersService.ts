@@ -2,6 +2,7 @@ import { Op, Sequelize } from "sequelize";
 import Queue from "../../models/Queue";
 import User from "../../models/User";
 import Whatsapp from "../../models/Whatsapp";
+import { escapeLikeValue } from "../../helpers/escapeLikeValue";
 
 interface Request {
   searchParam?: string;
@@ -18,6 +19,7 @@ const ListUsersService = async ({
   searchParam = "",
   pageNumber = "1"
 }: Request): Promise<Response> => {
+  const sanitizedSearchParam = escapeLikeValue(searchParam.toLowerCase());
   const whereCondition = {
     [Op.and]: [
       { profile: { [Op.ne]: "masteradmin" } },
@@ -27,10 +29,10 @@ const ListUsersService = async ({
             "$User.name$": Sequelize.where(
               Sequelize.fn("LOWER", Sequelize.col("User.name")),
               "LIKE",
-              `%${searchParam.toLowerCase()}%`
+              `%${sanitizedSearchParam}%`
             )
           },
-          { email: { [Op.like]: `%${searchParam.toLowerCase()}%` } }
+          { email: { [Op.like]: `%${sanitizedSearchParam}%` } }
         ]
       }
     ]

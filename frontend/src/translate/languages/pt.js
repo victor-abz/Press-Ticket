@@ -346,7 +346,8 @@ const messages = {
           exportSuccess: "Contatos exportados com sucesso!",
           noContactsToExport: "Não há contatos para exportar.",
           blocked: "Contato bloqueado no WhatsApp",
-          unblocked: "Contato desbloqueado no WhatsApp"
+          unblocked: "Contato desbloqueado no WhatsApp",
+          importSuccess: "Contatos sincronizados com sucesso!"
         },
         errors: {
           ticketAlreadyOpen: "Já existe um ticket aberto para este contato, atribuído ao Atendente: *{{userName}}* no Canal: *{{userChannel}}* criado em: *{{ticketCreatedAt}}*.",
@@ -479,6 +480,9 @@ const messages = {
         messages: {
           addOk: "Participantes adicionados (ou convite enviado).",
           addErr: "Erro ao adicionar participantes.",
+          addPartialSuccess: "{{success}} adicionado(s), {{invited}} convite(s) enviado(s), {{failed}} falha(s)",
+          addInviteOnly: "{{invited}} convite(s) enviado(s) por link privado",
+          addFailCode: "código {{code}}",
           removeOk: "Participantes removidos.",
           removeErr: "Erro ao remover participantes.",
           promoteOk: "Participantes promovidos a admin.",
@@ -527,6 +531,13 @@ const messages = {
       copyToClipboard: {
         copy: "Copiar",
         copied: "Copiado"
+      },
+      socketStatus: {
+        connected: "Conectado",
+        disconnected: "Desconectado",
+        disconnectedMessage: "Conexão em tempo real perdida. Tentando reconectar...",
+        reconnectedMessage: "Conexão em tempo real restabelecida.",
+        serverErrorMessage: "Erro recebido do servidor em tempo real."
       },
       cpuUsage: {
         title: "Uso de CPU",
@@ -1186,7 +1197,8 @@ const messages = {
           copyLinkSuccess: "Link copiado com sucesso!",
           copyLinkError: "Erro ao copiar link. Tente novamente.",
           cropSuccess: "Imagem recortada com sucesso!",
-          cropError: "Erro ao recortar imagem. Tente novamente."
+          cropError: "Erro ao recortar imagem. Tente novamente.",
+          invalidCropArea: "Selecione uma área válida para recorte"
         }
       },
       newTicketModal: {
@@ -1568,13 +1580,20 @@ const messages = {
             company: "Dados da empresa salvos com sucesso!",
             logos: "Logos salvos com sucesso!",
             colors: "Cores salvos com sucesso!",
+            logoRemoved: "Logo removida com sucesso!",
+            colorsTheme: "Cores do tema {{theme}} salvas com sucesso!",
           },
           error: {
             invalid: "Erro ao buscar personalizações.",
             company: "Erro ao salvar dados da empresa.",
             logos: "Erro ao salvar a logo.",
+            logoRemove: "Erro ao remover logo. Tente novamente.",
             logs: "Erro ao salvar a persoanalização:",
             colors: "Erro ao salvar cores do tema: "
+          },
+          info: {
+            uploadingLogo: "Enviando imagem...",
+            deletingLogo: "Removendo logo...",
           },
           tabs: {
             company: "Empresa",
@@ -2356,6 +2375,14 @@ const messages = {
         whatsappLibUpToDateMessage: "Sua biblioteca WhatsApp Web JS está com a versão mais recente disponível. Você está aproveitando todos os recursos e correções de segurança mais recentes.",
         whatsappLibUpdateAvailable: "Atualização da Biblioteca Disponível",
         whatsappLibUpdateMessage: "Uma nova versão da biblioteca WhatsApp Web JS está disponível."
+      },
+      errors: {
+        unauthorized: "Sua sessão expirou. Faça login novamente.",
+        forbidden: "Você não tem permissão para realizar esta ação.",
+        notFound: "Recurso não encontrado.",
+        conflict: "Já existe um registro com estes dados.",
+        serverError: "Erro interno do servidor. Tente novamente mais tarde.",
+        networkError: "Sem conexão com o servidor. Verifique sua internet e tente novamente."
       },
       backendErrors: {
         ERR_CREATING_MESSAGE: "Erro ao criar mensagem no banco de dados.",

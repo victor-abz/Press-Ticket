@@ -1,5 +1,6 @@
 import { Op, Sequelize } from "sequelize";
 import ClientStatus from "../../models/ClientStatus";
+import { escapeLikeValue } from "../../helpers/escapeLikeValue";
 
 interface Request {
   searchParam?: string;
@@ -21,10 +22,11 @@ const ListService = async ({
   const offset = limit * (+pageNumber - 1);
 
   if (searchParam) {
+    const sanitizedSearchParam = escapeLikeValue(searchParam);
     whereCondition = {
       [Op.or]: [
-        { name: { [Op.like]: `%${searchParam}%` } },
-        { color: { [Op.like]: `%${searchParam}%` } }
+        { name: { [Op.like]: `%${sanitizedSearchParam}%` } },
+        { color: { [Op.like]: `%${sanitizedSearchParam}%` } }
       ]
     };
   }

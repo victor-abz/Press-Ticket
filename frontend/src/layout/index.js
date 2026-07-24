@@ -14,6 +14,8 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import MenuIcon from '@mui/icons-material/Menu';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import WifiIcon from '@mui/icons-material/Wifi';
+import WifiOffIcon from '@mui/icons-material/WifiOff';
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
@@ -26,6 +28,7 @@ import ThemeSelector from '../components/ThemeSelector';
 import UserModal from "../components/UserModal";
 import SessionExpiredModal from "../components/SessionExpiredModal";
 import { AuthContext } from "../context/Auth/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import toastError from "../errors/toastError";
 import api from "../services/api";
 import openSocket from "../services/socket-io";
@@ -124,6 +127,7 @@ const LoggedInLayout = ({ children, toggleTheme, onThemeConfigUpdate }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const { handleLogout, loading, sessionExpired, handleSessionExpiredConfirm } = useContext(AuthContext);
+  const { connected: socketConnected } = useSocket();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { user } = useContext(AuthContext);
   const themeStorage = localStorage.getItem("theme");
@@ -356,6 +360,19 @@ const LoggedInLayout = ({ children, toggleTheme, onThemeConfigUpdate }) => {
           </Title>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Tooltip title={socketConnected ? t("socketStatus.connected") : t("socketStatus.disconnected")}>
+              <IconButton
+                color="inherit"
+                disableRipple
+                sx={{
+                  cursor: 'default',
+                  padding: 0.75,
+                  color: socketConnected ? 'inherit' : '#ffb4b4',
+                }}
+              >
+                {socketConnected ? <WifiIcon fontSize="small" /> : <WifiOffIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
             <Tooltip title={isFullscreen ? t("mainDrawer.appBar.fullscreen.exit") : t("mainDrawer.appBar.fullscreen.enter")}>
               <IconButton
                 onClick={toggleFullscreen}

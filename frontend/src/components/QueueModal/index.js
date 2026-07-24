@@ -29,6 +29,14 @@ import toastError from "../../errors/toastError";
 import api from "../../services/api";
 import ColorPicker from "../ColorPicker";
 
+const NAME_MAX_LENGTH = 50;
+const MESSAGE_MAX_LENGTH = 255;
+
+const charCounterSx = (length, max) => ({
+	textAlign: "right",
+	color: length >= max ? "error.main" : length >= max * 0.9 ? "warning.main" : "text.secondary",
+});
+
 const Root = styled('div')(({ theme }) => ({
 	display: "flex",
 	flexWrap: "wrap",
@@ -211,6 +219,7 @@ const QueueModal = ({ open, onClose, queueId }) => {
 											margin="dense"
 											fullWidth
 											placeholder={t("queueModal.form.namePlaceholder")}
+											inputProps={{ maxLength: NAME_MAX_LENGTH }}
 											InputProps={{
 												sx: { borderRadius: 2 }
 											}}
@@ -275,10 +284,17 @@ const QueueModal = ({ open, onClose, queueId }) => {
 											fullWidth
 											name="greetingMessage"
 											error={touched.greetingMessage && Boolean(errors.greetingMessage)}
-											helperText={touched.greetingMessage && errors.greetingMessage}
+											helperText={
+												(touched.greetingMessage && errors.greetingMessage) ||
+												`${(values.greetingMessage || "").length} / ${MESSAGE_MAX_LENGTH}`
+											}
+											FormHelperTextProps={{
+												sx: charCounterSx((values.greetingMessage || "").length, MESSAGE_MAX_LENGTH)
+											}}
 											variant="outlined"
 											margin="dense"
 											placeholder={t("queueModal.form.greetingMessagePlaceholder")}
+											inputProps={{ maxLength: MESSAGE_MAX_LENGTH }}
 											InputProps={{
 												sx: { borderRadius: 2 }
 											}}
@@ -389,10 +405,17 @@ const QueueModal = ({ open, onClose, queueId }) => {
 											fullWidth
 											name="breakMessage"
 											error={touched.breakMessage && Boolean(errors.breakMessage)}
-											helperText={touched.breakMessage && errors.breakMessage}
+											helperText={
+												(touched.breakMessage && errors.breakMessage) ||
+												`${(values.breakMessage || "").length} / ${MESSAGE_MAX_LENGTH}`
+											}
+											FormHelperTextProps={{
+												sx: charCounterSx((values.breakMessage || "").length, MESSAGE_MAX_LENGTH)
+											}}
 											variant="outlined"
 											margin="dense"
 											placeholder={t("queueModal.form.breakMessagePlaceholder")}
+											inputProps={{ maxLength: MESSAGE_MAX_LENGTH }}
 											InputProps={{
 												sx: { borderRadius: 2 }
 											}}
@@ -408,10 +431,17 @@ const QueueModal = ({ open, onClose, queueId }) => {
 											fullWidth
 											name="absenceMessage"
 											error={touched.absenceMessage && Boolean(errors.absenceMessage)}
-											helperText={touched.absenceMessage && errors.absenceMessage}
+											helperText={
+												(touched.absenceMessage && errors.absenceMessage) ||
+												`${(values.absenceMessage || "").length} / ${MESSAGE_MAX_LENGTH}`
+											}
+											FormHelperTextProps={{
+												sx: charCounterSx((values.absenceMessage || "").length, MESSAGE_MAX_LENGTH)
+											}}
 											variant="outlined"
 											margin="dense"
 											placeholder={t("queueModal.form.absenceMessagePlaceholder")}
+											inputProps={{ maxLength: MESSAGE_MAX_LENGTH }}
 											InputProps={{
 												sx: { borderRadius: 2 }
 											}}
@@ -452,6 +482,7 @@ const QueueModal = ({ open, onClose, queueId }) => {
 													fullWidth
 													placeholder={t("queueModal.form.n8nUrlPlaceholder")}
 													helperText={t("queueModal.form.n8nUrlHelper")}
+													inputProps={{ maxLength: MESSAGE_MAX_LENGTH }}
 													InputProps={{
 														sx: { borderRadius: 2 }
 													}}

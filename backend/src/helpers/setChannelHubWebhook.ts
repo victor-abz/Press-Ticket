@@ -42,7 +42,14 @@ export const setChannelWebhook = async (
   const hubToken = await showHubToken();
   const client = createNotificameClient(hubToken);
 
-  const url = `${process.env.WEBHOOK}/hub-webhook/${whatsapp.qrcode}`;
+  const webhookSecret = process.env.HUB_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    throw new Error(
+      "HUB_WEBHOOK_SECRET não configurado — defina a variável de ambiente antes de registrar o webhook"
+    );
+  }
+
+  const url = `${process.env.WEBHOOK}/hub-webhook/${whatsapp.qrcode}?token=${encodeURIComponent(webhookSecret)}`;
   const criteria = { channel: whatsapp.qrcode };
 
   await createSubscriptionSafe(

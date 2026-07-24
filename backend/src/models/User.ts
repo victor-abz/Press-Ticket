@@ -107,7 +107,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   @BeforeCreate
   static hashPassword = async (instance: User): Promise<void> => {
     if (instance.password) {
-      instance.passwordHash = await hash(instance.password, 8);
+      instance.passwordHash = await hash(instance.password, 10);
     }
   };
 

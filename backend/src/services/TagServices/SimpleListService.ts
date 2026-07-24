@@ -1,6 +1,7 @@
 import { Op, Sequelize } from "sequelize";
 import Tag from "../../models/Tag";
 import Contact from "../../models/Contact";
+import { escapeLikeValue } from "../../helpers/escapeLikeValue";
 
 interface Request {
   searchParam?: string;
@@ -10,10 +11,11 @@ const ListService = async ({ searchParam }: Request): Promise<Tag[]> => {
   let whereCondition = {};
 
   if (searchParam) {
+    const sanitizedSearchParam = escapeLikeValue(searchParam);
     whereCondition = {
       [Op.or]: [
-        { name: { [Op.like]: `%${searchParam}%` } },
-        { color: { [Op.like]: `%${searchParam}%` } }
+        { name: { [Op.like]: `%${sanitizedSearchParam}%` } },
+        { color: { [Op.like]: `%${sanitizedSearchParam}%` } }
       ]
     };
   }

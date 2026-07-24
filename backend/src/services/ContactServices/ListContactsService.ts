@@ -1,6 +1,7 @@
 import { Includeable, Op, Sequelize, WhereOptions } from "sequelize";
 import Contact from "../../models/Contact";
 import Tag from "../../models/Tag";
+import { escapeLikeValue } from "../../helpers/escapeLikeValue";
 
 interface Request {
   searchParam?: string;
@@ -24,23 +25,24 @@ const ListContactsService = async ({
   status
 }: Request): Promise<Response> => {
   type DynWhere = Record<PropertyKey, unknown>;
+  const sanitizedSearchParam = escapeLikeValue(searchParam.toLowerCase().trim());
   const whereCondition: DynWhere = {
     [Op.or]: [
       {
         name: Sequelize.where(
           Sequelize.fn("LOWER", Sequelize.col("Contact.name")),
           "LIKE",
-          `%${searchParam.toLowerCase().trim()}%`
+          `%${sanitizedSearchParam}%`
         )
       },
       {
-        number: { [Op.like]: `%${searchParam.toLowerCase().trim()}%` }
+        number: { [Op.like]: `%${sanitizedSearchParam}%` }
       },
       {
         email: Sequelize.where(
           Sequelize.fn("LOWER", Sequelize.col("Contact.email")),
           "LIKE",
-          `%${searchParam.toLowerCase().trim()}%`
+          `%${sanitizedSearchParam}%`
         )
       }
     ],

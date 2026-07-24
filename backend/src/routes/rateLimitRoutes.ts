@@ -1,7 +1,19 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import { rateLimits, authLimiter, apiLimiter } from "../config/rateLimiter";
 
 const rateLimitRoutes = Router();
+
+// Endpoints de diagnóstico — expõem thresholds exatos de rate limit e
+// comandos de teste de força bruta; nunca devem responder em produção.
+const devOnly = (req: Request, res: Response, next: NextFunction): void => {
+  if (process.env.NODE_ENV === "production") {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  next();
+};
+
+rateLimitRoutes.use(devOnly);
 
 // Endpoint para verificar status do rate limit
 rateLimitRoutes.get("/rate-limit-status", (req: Request, res: Response) => {

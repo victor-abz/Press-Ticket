@@ -395,7 +395,9 @@ const SendWhatsAppMedia = async ({
       throw new AppError("Erro ao processar arquivo para envio");
     }
 
-    await ticket.update({ lastMessage: body || media.filename });
+    await ticket.update({
+      lastMessage: body || media.originalname || media.filename
+    });
     await ticket.reload();
 
     let savedFilename = media.filename;
@@ -480,7 +482,7 @@ const SendWhatsAppMedia = async ({
       id: sentMessage.id.id,
       ticketId: ticket.id,
       contactId: undefined,
-      body: body || media.filename,
+      body: body || media.originalname || media.filename,
       fromMe: true,
       mediaType: media.mimetype.split("/")[0],
       mediaUrl: savedFilename,

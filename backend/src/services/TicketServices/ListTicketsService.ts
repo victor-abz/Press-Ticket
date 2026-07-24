@@ -8,6 +8,7 @@ import User from "../../models/User";
 import Whatsapp from "../../models/Whatsapp";
 import ListSettingsServiceOne from "../SettingServices/ListSettingsServiceOne";
 import { logger } from "../../utils/logger";
+import { escapeLikeValue } from "../../helpers/escapeLikeValue";
 
 interface Request {
   searchParam?: string;
@@ -92,7 +93,9 @@ const ListTicketsService = async ({
     }
 
     if (searchParam) {
-      const sanitizedSearchParam = searchParam.toLocaleLowerCase().trim();
+      const sanitizedSearchParam = escapeLikeValue(
+        searchParam.toLocaleLowerCase().trim()
+      );
 
       includeCondition = [
         ...includeCondition,

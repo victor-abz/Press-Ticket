@@ -17,6 +17,13 @@ import { styled } from "@mui/material/styles";
 import { toast } from "react-toastify";
 import api from "../../services/api";
 
+const DESCRIPTION_MAX_LENGTH = 512;
+
+const charCounterSx = (length, max) => ({
+  textAlign: "right",
+  color: length >= max ? "error.main" : length >= max * 0.9 ? "warning.main" : "text.secondary",
+});
+
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
     minWidth: 500,
@@ -219,6 +226,11 @@ const GroupSettingsModal = ({ open, onClose, whatsappId, group, onSuccess }) => 
             multiline
             rows={3}
             disabled={loading}
+            inputProps={{ maxLength: DESCRIPTION_MAX_LENGTH }}
+            helperText={`${(groupDescription || "").length} / ${DESCRIPTION_MAX_LENGTH}`}
+            FormHelperTextProps={{
+              sx: charCounterSx((groupDescription || "").length, DESCRIPTION_MAX_LENGTH)
+            }}
           />
           <Box mt={1}>
             <Button

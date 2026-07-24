@@ -312,20 +312,20 @@ const PersonalizeSettings = ({ toggleTheme, onThemeConfigUpdate }) => {
         formData.append(type, file);
 
         try {
-            toast.info("Enviando imagem...", {
+            toast.info(t("settings.personalize.info.uploadingLogo"), {
                 autoClose: false,
                 toastId: "uploadingLogo"
             });
 
             const response = await api.put(`/personalizations/${theme}/logos`, formData, {
-                headers: { 
+                headers: {
                     "Content-Type": "multipart/form-data"
                 },
             });
 
             if (response.data && response.data[type]) {
                 const fileName = response.data[type];
-                
+
                 setLogos(prevState => ({
                     ...prevState,
                     [theme === "light" ? "themeLight" : "themeDark"]: {
@@ -339,14 +339,14 @@ const PersonalizeSettings = ({ toggleTheme, onThemeConfigUpdate }) => {
                 });
 
                 toast.dismiss("uploadingLogo");
-                toast.success("Imagem atualizada com sucesso!");
+                toast.success(t("settings.personalize.success.logos"));
             }
         } catch (error) {
             console.error("Erro ao fazer upload da imagem:", error);
             toast.dismiss("uploadingLogo");
             toast.error(
-                error.response?.data?.message || 
-                "Erro ao fazer upload da imagem. Tente novamente."
+                error.response?.data?.message ||
+                t("settings.personalize.error.logos")
             );
         } finally {
             if (event.target) {
@@ -357,7 +357,7 @@ const PersonalizeSettings = ({ toggleTheme, onThemeConfigUpdate }) => {
 
     const handleDeleteLogo = async (theme, type) => {
         try {
-            toast.info("Removendo logo...", {
+            toast.info(t("settings.personalize.info.deletingLogo"), {
                 autoClose: false,
                 toastId: "deletingLogo"
             });
@@ -377,13 +377,13 @@ const PersonalizeSettings = ({ toggleTheme, onThemeConfigUpdate }) => {
             });
 
             toast.dismiss("deletingLogo");
-            toast.success("Logo removida com sucesso!");
+            toast.success(t("settings.personalize.success.logoRemoved"));
         } catch (error) {
             console.error("Erro ao remover logo:", error);
             toast.dismiss("deletingLogo");
             toast.error(
-                error.response?.data?.message || 
-                "Erro ao remover logo. Tente novamente."
+                error.response?.data?.message ||
+                t("settings.personalize.error.logoRemove")
             );
         }
     };
@@ -412,7 +412,7 @@ const PersonalizeSettings = ({ toggleTheme, onThemeConfigUpdate }) => {
             const response = await api.put(`/personalizations/${theme}/colors`, payload);
 
             if (response.status === 200) {
-                toast.success(`Cores do tema ${theme} salvas com sucesso!`);
+                toast.success(t("settings.personalize.success.colorsTheme", { theme }));
                 if (typeof onThemeConfigUpdate === 'function') {
                     onThemeConfigUpdate(theme, colorsToSave);
                 }

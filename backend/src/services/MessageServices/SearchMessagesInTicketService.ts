@@ -3,6 +3,7 @@ import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
 import ShowTicketService from "../TicketServices/ShowTicketService";
 import AppError from "../../errors/AppError";
+import { escapeLikeValue } from "../../helpers/escapeLikeValue";
 
 interface Request {
   ticketId: string;
@@ -44,7 +45,7 @@ const SearchMessagesInTicketService = async ({
 
   const { count, rows: messages } = await Message.findAndCountAll({
     where: {
-      body: { [Op.like]: `%${query}%` }
+      body: { [Op.like]: `%${escapeLikeValue(query)}%` }
     },
     include: [
       "contact",
