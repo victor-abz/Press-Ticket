@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import AppError from "../../../errors/AppError";
 import CreateUserService from "../../../services/UserServices/CreateUserService";
 import { disconnect, truncate } from "../../utils/database";
+import { strongPassword } from "../../utils/strongPassword";
 
 describe("User", () => {
   beforeEach(async () => {
@@ -20,7 +21,7 @@ describe("User", () => {
     const user = await CreateUserService({
       name: faker.person.fullName(),
       email: faker.internet.email(),
-      password: faker.internet.password()
+      password: strongPassword()
     });
 
     expect(user).toHaveProperty("id");
@@ -30,14 +31,14 @@ describe("User", () => {
     await CreateUserService({
       name: faker.person.fullName(),
       email: "teste@sameemail.com",
-      password: faker.internet.password()
+      password: strongPassword()
     });
 
     try {
       await CreateUserService({
         name: faker.person.fullName(),
         email: "teste@sameemail.com",
-        password: faker.internet.password()
+        password: strongPassword()
       });
     } catch (err) {
       expect(err).toBeInstanceOf(AppError);

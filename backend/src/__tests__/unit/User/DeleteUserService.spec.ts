@@ -3,6 +3,7 @@ import AppError from "../../../errors/AppError";
 import CreateUserService from "../../../services/UserServices/CreateUserService";
 import DeleteUserService from "../../../services/UserServices/DeleteUserService";
 import { disconnect, truncate } from "../../utils/database";
+import { strongPassword } from "../../utils/strongPassword";
 
 jest.mock("../../../config/auth", () => ({
   __esModule: true,
@@ -38,7 +39,7 @@ describe("User", () => {
     const { id } = await CreateUserService({
       name: faker.person.fullName(),
       email: faker.internet.email(),
-      password: faker.internet.password()
+      password: strongPassword()
     });
 
     expect(DeleteUserService(id)).resolves.not.toThrow();

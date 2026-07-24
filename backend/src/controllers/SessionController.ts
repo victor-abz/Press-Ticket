@@ -5,6 +5,7 @@ import EmailService from "../services/EmailService";
 import { Op } from "sequelize";
 import AppError from "../errors/AppError";
 import { SendRefreshToken } from "../helpers/SendRefreshToken";
+import { assertPasswordValid } from "../helpers/validatePassword";
 import User from "../models/User";
 import UserSession from "../models/UserSession";
 import { RefreshTokenService } from "../services/AuthServices/RefreshTokenService";
@@ -223,6 +224,8 @@ export const resetPassword = async (
   if (!user) {
     throw new AppError("Token inválido ou expirado.", 400);
   }
+
+  assertPasswordValid(newPassword);
 
   const newTokenVersion = user.tokenVersion + 1;
 

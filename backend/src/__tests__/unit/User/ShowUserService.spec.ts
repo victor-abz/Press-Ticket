@@ -4,6 +4,7 @@ import User from "../../../models/User";
 import CreateUserService from "../../../services/UserServices/CreateUserService";
 import ShowUserService from "../../../services/UserServices/ShowUserService";
 import { disconnect, truncate } from "../../utils/database";
+import { strongPassword } from "../../utils/strongPassword";
 
 describe("User", () => {
   beforeEach(async () => {
@@ -22,7 +23,7 @@ describe("User", () => {
     const newUser = await CreateUserService({
       name: faker.person.fullName(),
       email: faker.internet.email(),
-      password: faker.internet.password()
+      password: strongPassword()
     });
 
     const user = await ShowUserService(newUser.id);

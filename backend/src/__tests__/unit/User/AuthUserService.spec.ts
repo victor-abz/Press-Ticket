@@ -4,6 +4,7 @@ import User from "../../../models/User";
 import AuthUserService from "../../../services/UserServices/AuthUserService";
 import CreateUserService from "../../../services/UserServices/CreateUserService";
 import { disconnect, truncate } from "../../utils/database";
+import { strongPassword } from "../../utils/strongPassword";
 
 jest.mock("../../../config/auth", () => ({
   __esModule: true,
@@ -35,7 +36,7 @@ describe("Auth", () => {
   });
 
   it("should be able to login with an existing user", async () => {
-    const password = faker.internet.password();
+    const password = strongPassword();
     const email = faker.internet.email();
 
     await CreateUserService({
@@ -71,7 +72,7 @@ describe("Auth", () => {
     await CreateUserService({
       name: faker.person.fullName(),
       email: "mail@test.com",
-      password: faker.internet.password(),
+      password: strongPassword(),
       startWork: "00:00",
       endWork: "23:59"
     });
@@ -90,7 +91,7 @@ describe("Auth", () => {
 
   it("should not be able to login with inactive user", async () => {
     const email = faker.internet.email();
-    const password = faker.internet.password();
+    const password = strongPassword();
 
     await CreateUserService({
       name: faker.person.fullName(),
@@ -113,7 +114,7 @@ describe("Auth", () => {
 
   it("should not be able to login outside working hours", async () => {
     const email = faker.internet.email();
-    const password = faker.internet.password();
+    const password = strongPassword();
 
     // Janela de 0 minutos (início == fim) — impossível satisfazer no CI
     await CreateUserService({

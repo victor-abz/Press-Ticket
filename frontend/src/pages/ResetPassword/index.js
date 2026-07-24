@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import Grid from '@mui/material/Grid';
 import InputAdornment from '@mui/material/InputAdornment';
+import LinearProgress from '@mui/material/LinearProgress';
 import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -18,6 +19,27 @@ import { toast } from "react-toastify";
 import { getImageUrl } from '../../helpers/imageHelper';
 import toastError from "../../errors/toastError";
 import api from "../../services/api";
+
+const PASSWORD_SPECIAL_CHARS_REGEX = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/;
+
+/**
+ * Calcula a força da senha com base nas mesmas regras do backend.
+ * Retorna: 0 = inválida, 1 = fraca, 2 = média, 3 = forte
+ */
+const getPasswordStrength = (password) => {
+    if (!password) return 0;
+
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (PASSWORD_SPECIAL_CHARS_REGEX.test(password)) score++;
+
+    if (score <= 2) return 1; // fraca
+    if (score <= 4) return 2; // média
+    return 3;                  // forte (todos os 5 critérios)
+};
 
 const Copyright = ({ companyName, companyUrl }) => {
     return (
@@ -189,6 +211,11 @@ const ResetPassword = () => {
             return;
         }
 
+        if (getPasswordStrength(password) < 3) {
+            toast.error(t("passwordStrength.requirements"));
+            return;
+        }
+
         try {
             await api.post("/auth/reset-password", {
                 token,
@@ -196,7 +223,7 @@ const ResetPassword = () => {
             });
             toast.success(t("resetPassword.success"));
         } catch (err) {
-            toast.error(t("resetPassword.error.generic"));
+            toastError(err, t);
         }
     };
 
@@ -238,7 +265,35 @@ const ResetPassword = () => {
                                     ),
                                 }}
                             />
-                            
+
+                            {password && (
+                                <Box sx={{ mt: -1, mb: 1 }}>
+                                    <LinearProgress
+                                        variant="determinate"
+                                        value={(getPasswordStrength(password) / 3) * 100}
+                                        sx={{
+                                            height: 4,
+                                            borderRadius: 2,
+                                            "& .MuiLinearProgress-bar": {
+                                                backgroundColor:
+                                                    getPasswordStrength(password) === 1 ? "error.main" :
+                                                    getPasswordStrength(password) === 2 ? "warning.main" :
+                                                    "success.main",
+                                            },
+                                        }}
+                                    />
+                                    <Typography variant="caption" color={
+                                        getPasswordStrength(password) === 1 ? "error" :
+                                        getPasswordStrength(password) === 2 ? "warning.main" :
+                                        "success.main"
+                                    }>
+                                        {getPasswordStrength(password) === 1 && t("passwordStrength.weak")}
+                                        {getPasswordStrength(password) === 2 && t("passwordStrength.medium")}
+                                        {getPasswordStrength(password) === 3 && t("passwordStrength.strong")}
+                                    </Typography>
+                                </Box>
+                            )}
+
                             <StyledTextField
                                 variant="outlined"
                                 required

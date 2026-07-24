@@ -1378,6 +1378,12 @@ const messages = {
           generic: "Erro ao redefinir senha. Tente novamente."
         }
       },
+      passwordStrength: {
+        weak: "Senha fraca",
+        medium: "Senha média",
+        strong: "Senha forte",
+        requirements: "A senha deve ter ao menos 8 caracteres, uma maiúscula, uma minúscula, um número e um caractere especial.",
+      },
       settings: {
         title: "Configurações",
         success: "Configurações salvas com sucesso.",
@@ -2431,6 +2437,12 @@ const messages = {
         ERR_FETCH_WAPP_MSG: "Erro ao buscar a mensagem no WhatsApp, talvez ela seja muito antiga.",
         ERR_INVALID_CREDENTIALS: "Erro de autenticação. Por favor, tente novamente.",
         ERR_INVALID_PASSWORD: "Senha atual incorreta.",
+        ERR_PASSWORD_REQUIRED: "Informe uma senha.",
+        ERR_PASSWORD_MIN_LENGTH: "A senha deve ter ao menos 8 caracteres.",
+        ERR_PASSWORD_UPPERCASE: "A senha deve conter ao menos uma letra maiúscula.",
+        ERR_PASSWORD_LOWERCASE: "A senha deve conter ao menos uma letra minúscula.",
+        ERR_PASSWORD_NUMBER: "A senha deve conter ao menos um número.",
+        ERR_PASSWORD_SPECIAL: "A senha deve conter ao menos um caractere especial (!@#$%^&*...).",
         ERR_NO_CONTACT_FOUND: "Nenhum contato encontrado com este ID.",
         ERR_NO_DEF_WAPP_FOUND: "Nenhum WhatsApp padrão encontrado. Verifique a página de canais.",
         ERR_NO_INTEGRATION_FOUND: "Integração não encontrada.",

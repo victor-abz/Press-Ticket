@@ -3,6 +3,7 @@ import AppError from "../../../errors/AppError";
 import CreateUserService from "../../../services/UserServices/CreateUserService";
 import UpdateUserService from "../../../services/UserServices/UpdateUserService";
 import { disconnect, truncate } from "../../utils/database";
+import { strongPassword } from "../../utils/strongPassword";
 
 jest.mock("../../../config/auth", () => ({
   __esModule: true,
@@ -31,7 +32,7 @@ describe("User", () => {
     const newUser = await CreateUserService({
       name: faker.person.fullName(),
       email: faker.internet.email(),
-      password: faker.internet.password()
+      password: strongPassword()
     });
 
     const updatedUser = await UpdateUserService({
@@ -62,7 +63,7 @@ describe("User", () => {
     const newUser = await CreateUserService({
       name: faker.person.fullName(),
       email: faker.internet.email(),
-      password: faker.internet.password()
+      password: strongPassword()
     });
 
     const userId = newUser.id;

@@ -6,6 +6,7 @@ import UserSession from "../../../models/UserSession";
 import { RefreshTokenService } from "../../../services/AuthServices/RefreshTokenService";
 import CreateUserService from "../../../services/UserServices/CreateUserService";
 import { disconnect, truncate } from "../../utils/database";
+import { strongPassword } from "../../utils/strongPassword";
 
 jest.mock("../../../config/auth", () => ({
   __esModule: true,
@@ -38,7 +39,7 @@ const createTestUser = async (
   const created = await CreateUserService({
     name: faker.person.fullName(),
     email: faker.internet.email(),
-    password: faker.internet.password(),
+    password: strongPassword(),
     startWork: overrides.startWork ?? "00:00",
     endWork: overrides.endWork ?? "23:59"
   });

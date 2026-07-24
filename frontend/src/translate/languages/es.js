@@ -620,6 +620,12 @@ const messages = {
             generic: "Error al restablecer la contraseña. Inténtalo de nuevo."
           }
         },
+        passwordStrength: {
+          weak: "Contraseña débil",
+          medium: "Contraseña media",
+          strong: "Contraseña fuerte",
+          requirements: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.",
+        },
         settings: {
           success: "Configuraciones guardadas con éxito.",
           tabs: {
@@ -1129,6 +1135,12 @@ const messages = {
           ERR_FETCH_WAPP_MSG: "Error al obtener el mensaje en WhatsApp, puede que sea muy antiguo.",
           ERR_INVALID_CREDENTIALS: "Error de autenticación. Por favor, inténtelo nuevamente.",
           ERR_INVALID_PASSWORD: "La contraseña actual es incorrecta.",
+          ERR_PASSWORD_REQUIRED: "Ingrese una contraseña.",
+          ERR_PASSWORD_MIN_LENGTH: "La contraseña debe tener al menos 8 caracteres.",
+          ERR_PASSWORD_UPPERCASE: "La contraseña debe contener al menos una letra mayúscula.",
+          ERR_PASSWORD_LOWERCASE: "La contraseña debe contener al menos una letra minúscula.",
+          ERR_PASSWORD_NUMBER: "La contraseña debe contener al menos un número.",
+          ERR_PASSWORD_SPECIAL: "La contraseña debe contener al menos un carácter especial (!@#$%^&*...).",
           ERR_NO_CONTACT_FOUND: "No se encontró ningún contacto con este ID.",
           ERR_NO_DEF_WAPP_FOUND: "No se encontró un WhatsApp predeterminado. Verifique la página de canales.",
           ERR_NO_INTEGRATION_FOUND: "Integración no encontrada.",

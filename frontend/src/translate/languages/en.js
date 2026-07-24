@@ -641,6 +641,12 @@ const messages = {
           generic: "Error resetting password. Try again."
         }
       },
+      passwordStrength: {
+        weak: "Weak password",
+        medium: "Medium password",
+        strong: "Strong password",
+        requirements: "Password must have at least 8 characters, one uppercase, one lowercase, one number and one special character.",
+      },
       settings: {
         success: "Settings saved successfully.",
         tabs: {
@@ -1150,6 +1156,12 @@ const messages = {
         ERR_FETCH_WAPP_MSG: "Error fetching message from WhatsApp, it may be too old.",
         ERR_INVALID_CREDENTIALS: "Authentication error. Please try again.",
         ERR_INVALID_PASSWORD: "Current password is incorrect.",
+        ERR_PASSWORD_REQUIRED: "Please enter a password.",
+        ERR_PASSWORD_MIN_LENGTH: "Password must be at least 8 characters.",
+        ERR_PASSWORD_UPPERCASE: "Password must contain at least one uppercase letter.",
+        ERR_PASSWORD_LOWERCASE: "Password must contain at least one lowercase letter.",
+        ERR_PASSWORD_NUMBER: "Password must contain at least one number.",
+        ERR_PASSWORD_SPECIAL: "Password must contain at least one special character (!@#$%^&*...).",
         ERR_NO_CONTACT_FOUND: "No contact found with this ID.",
         ERR_NO_DEF_WAPP_FOUND: "No default WhatsApp found. Check the channels page.",
         ERR_NO_INTEGRATION_FOUND: "Integration not found.",

@@ -38,9 +38,12 @@ const buildReq = (overrides: Partial<Request> = {}): Request =>
     ...overrides
   } as unknown as Request);
 
+const strongPassword = (): string =>
+  `Senha@${faker.string.alphanumeric(6)}1`;
+
 const createTestUser = async (): Promise<{ email: string; password: string }> => {
   const email = faker.internet.email();
-  const password = faker.internet.password();
+  const password = strongPassword();
 
   await CreateUserService({
     name: faker.person.fullName(),
@@ -236,7 +239,7 @@ describe("Login lockout", () => {
     const admin = await CreateUserService({
       name: faker.person.fullName(),
       email: faker.internet.email(),
-      password: faker.internet.password(),
+      password: strongPassword(),
       profile: "admin",
       startWork: "00:00",
       endWork: "23:59"
@@ -273,7 +276,7 @@ describe("Login lockout", () => {
     const regularUser = await CreateUserService({
       name: faker.person.fullName(),
       email: faker.internet.email(),
-      password: faker.internet.password(),
+      password: strongPassword(),
       profile: "user",
       startWork: "00:00",
       endWork: "23:59"

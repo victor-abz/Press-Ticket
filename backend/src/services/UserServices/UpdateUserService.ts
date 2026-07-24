@@ -6,6 +6,7 @@ import {
   createRefreshToken
 } from "../../helpers/CreateTokens";
 import { SerializeUser } from "../../helpers/SerializeUser";
+import { assertPasswordValid } from "../../helpers/validatePassword";
 import User from "../../models/User";
 import ShowUserService from "./ShowUserService";
 
@@ -92,6 +93,10 @@ const UpdateUserService = async ({
     if (!currentPasswordMatches) {
       throw new AppError("ERR_INVALID_PASSWORD", 401);
     }
+  }
+
+  if (isPasswordChange) {
+    assertPasswordValid(password as string);
   }
 
   const shouldInvalidateSessions = isPasswordChange || isDeactivation;

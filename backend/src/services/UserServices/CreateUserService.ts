@@ -2,6 +2,7 @@ import * as Yup from "yup";
 
 import AppError from "../../errors/AppError";
 import { SerializeUser } from "../../helpers/SerializeUser";
+import { assertPasswordValid } from "../../helpers/validatePassword";
 import User from "../../models/User";
 
 interface Request {
@@ -65,6 +66,8 @@ const CreateUserService = async ({
   } catch (err) {
     throw new AppError(err.message);
   }
+
+  assertPasswordValid(password);
 
   const user = await User.create(
     {

@@ -1,4 +1,5 @@
 import {
+	Box,
 	Button,
 	CircularProgress,
 	Dialog,
@@ -9,6 +10,7 @@ import {
 	IconButton,
 	InputAdornment,
 	InputLabel,
+	LinearProgress,
 	MenuItem,
 	Select,
 	TextField,
@@ -114,12 +116,39 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 	},
 }));
 
-const UserSchema = Yup.object().shape({
+const PASSWORD_SPECIAL_CHARS_REGEX = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/;
+
+/**
+ * Calcula a força da senha com base nas mesmas regras do backend.
+ * Retorna: 0 = inválida, 1 = fraca, 2 = média, 3 = forte
+ */
+const getPasswordStrength = (password) => {
+	if (!password) return 0;
+
+	let score = 0;
+	if (password.length >= 8) score++;
+	if (/[A-Z]/.test(password)) score++;
+	if (/[a-z]/.test(password)) score++;
+	if (/[0-9]/.test(password)) score++;
+	if (PASSWORD_SPECIAL_CHARS_REGEX.test(password)) score++;
+
+	if (score <= 2) return 1; // fraca
+	if (score <= 4) return 2; // média
+	return 3;                  // forte (todos os 5 critérios)
+};
+
+const buildUserSchema = (t) => Yup.object().shape({
 	name: Yup.string()
 		.min(2, "Too Short!")
 		.max(50, "Too Long!")
 		.required("Required"),
-	password: Yup.string().min(5, "Too Short!").max(50, "Too Long!"),
+	password: Yup.string()
+		.max(50, "Too Long!")
+		.test("password-min-length", t("backendErrors.ERR_PASSWORD_MIN_LENGTH"), value => !value || value.length >= 8)
+		.test("password-uppercase", t("backendErrors.ERR_PASSWORD_UPPERCASE"), value => !value || /[A-Z]/.test(value))
+		.test("password-lowercase", t("backendErrors.ERR_PASSWORD_LOWERCASE"), value => !value || /[a-z]/.test(value))
+		.test("password-number", t("backendErrors.ERR_PASSWORD_NUMBER"), value => !value || /[0-9]/.test(value))
+		.test("password-special", t("backendErrors.ERR_PASSWORD_SPECIAL"), value => !value || PASSWORD_SPECIAL_CHARS_REGEX.test(value)),
 	email: Yup.string().email("Invalid email").required("Required"),
 	whatsappNumber: Yup.string()
 		.nullable()
@@ -153,14 +182,15 @@ const UserModal = ({ open, onClose, userId }) => {
 	const isSelfEdit = Boolean(userId) && Boolean(loggedInUser?.id) && String(loggedInUser.id) === String(userId);
 
 	const validationSchema = useMemo(() => {
-		if (!isSelfEdit) return UserSchema;
-		return UserSchema.shape({
+		const schema = buildUserSchema(t);
+		if (!isSelfEdit) return schema;
+		return schema.shape({
 			currentPassword: Yup.string().when("password", {
 				is: password => Boolean(password),
 				then: schema => schema.required("Required"),
 			}),
 		});
-	}, [isSelfEdit]);
+	}, [isSelfEdit, t]);
 
 	useEffect(() => {
 		const fetchUser = async () => {
@@ -304,6 +334,33 @@ const UserModal = ({ open, onClose, userId }) => {
 										fullWidth
 									/>
 								</MultFieldLine>
+								{values.password && (
+									<Box sx={{ mt: 0.5, mb: 1 }}>
+										<LinearProgress
+											variant="determinate"
+											value={(getPasswordStrength(values.password) / 3) * 100}
+											sx={{
+												height: 4,
+												borderRadius: 2,
+												"& .MuiLinearProgress-bar": {
+													backgroundColor:
+														getPasswordStrength(values.password) === 1 ? "error.main" :
+														getPasswordStrength(values.password) === 2 ? "warning.main" :
+														"success.main",
+												},
+											}}
+										/>
+										<Typography variant="caption" color={
+											getPasswordStrength(values.password) === 1 ? "error" :
+											getPasswordStrength(values.password) === 2 ? "warning.main" :
+											"success.main"
+										}>
+											{getPasswordStrength(values.password) === 1 && t("passwordStrength.weak")}
+											{getPasswordStrength(values.password) === 2 && t("passwordStrength.medium")}
+											{getPasswordStrength(values.password) === 3 && t("passwordStrength.strong")}
+										</Typography>
+									</Box>
+								)}
 								{isSelfEdit && values.password && (
 									<MultFieldLine>
 										<Field

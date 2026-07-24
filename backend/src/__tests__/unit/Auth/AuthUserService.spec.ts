@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import User from "../../../models/User";
+import { strongPassword } from "../../utils/strongPassword";
 import UserSession from "../../../models/UserSession";
 import AuthUserService from "../../../services/UserServices/AuthUserService";
 import CreateUserService from "../../../services/UserServices/CreateUserService";
@@ -37,7 +38,7 @@ describe("AuthUserService", () => {
   });
 
   it("should return token, refreshToken and serializedUser on valid credentials", async () => {
-    const password = faker.internet.password();
+    const password = strongPassword();
     const email = faker.internet.email();
 
     await CreateUserService({
@@ -71,7 +72,7 @@ describe("AuthUserService", () => {
     await CreateUserService({
       name: faker.person.fullName(),
       email,
-      password: faker.internet.password(),
+      password: strongPassword(),
       startWork: "00:00",
       endWork: "23:59"
     });
@@ -83,7 +84,7 @@ describe("AuthUserService", () => {
 
   it("should throw ERR_USER_INACTIVE for inactive user", async () => {
     const email = faker.internet.email();
-    const password = faker.internet.password();
+    const password = strongPassword();
 
     await CreateUserService({
       name: faker.person.fullName(),
@@ -102,7 +103,7 @@ describe("AuthUserService", () => {
 
   it("should throw ERR_OUT_OF_HOURS when login is outside working hours", async () => {
     const email = faker.internet.email();
-    const password = faker.internet.password();
+    const password = strongPassword();
 
     // Zero-width window ensures current time never satisfies start == end
     await CreateUserService({
@@ -120,7 +121,7 @@ describe("AuthUserService", () => {
 
   it("should set user online status to true after successful login", async () => {
     const email = faker.internet.email();
-    const password = faker.internet.password();
+    const password = strongPassword();
 
     await CreateUserService({
       name: faker.person.fullName(),
@@ -138,7 +139,7 @@ describe("AuthUserService", () => {
 
   it("should close expired session and allow re-login when session exceeded timeout", async () => {
     const email = faker.internet.email();
-    const password = faker.internet.password();
+    const password = strongPassword();
 
     await CreateUserService({
       name: faker.person.fullName(),
