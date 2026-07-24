@@ -833,6 +833,11 @@ const messages = {
           },
         }
       },
+      sessionExpiredModal: {
+        title: "Session Ended",
+        message: "Your session has ended. Click confirm to be redirected to the login screen.",
+        confirm: "Confirm",
+      },
       signup: {
         title: "Sign up",
         toasts: {
@@ -1041,6 +1046,8 @@ const messages = {
           name: "Name",
           email: "Email",
           password: "Password",
+          currentPassword: "Current password",
+          currentPasswordPlaceholder: "Enter your current password to confirm",
           profile: "Profile",
           admin: "Administrator",
           user: "Agent",
@@ -1058,6 +1065,7 @@ const messages = {
           cancel: "Cancel",
         },
         success: "Agent saved successfully.",
+        passwordChanged: "Password changed successfully.",
       },
       whatsappModal: {
         title: {
@@ -1123,6 +1131,7 @@ const messages = {
         ERR_EDITING_WAPP_MSG: "Could not edit WhatsApp message.",
         ERR_FETCH_WAPP_MSG: "Error fetching message from WhatsApp, it may be too old.",
         ERR_INVALID_CREDENTIALS: "Authentication error. Please try again.",
+        ERR_INVALID_PASSWORD: "Current password is incorrect.",
         ERR_NO_CONTACT_FOUND: "No contact found with this ID.",
         ERR_NO_DEF_WAPP_FOUND: "No default WhatsApp found. Check the channels page.",
         ERR_NO_INTEGRATION_FOUND: "Integration not found.",

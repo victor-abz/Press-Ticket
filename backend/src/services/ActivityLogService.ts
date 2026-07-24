@@ -39,7 +39,10 @@ export enum ActivityActions {
   SYSTEM = "system",
   LOGIN_FAILED = "login_failed",
   ACCOUNT_LOCKED = "account_locked",
-  ACCOUNT_UNLOCKED = "account_unlocked"
+  ACCOUNT_UNLOCKED = "account_unlocked",
+  PASSWORD_CHANGED = "password_changed",
+  ADMIN_PASSWORD_RESET = "admin_password_reset",
+  ACCOUNT_DEACTIVATED = "account_deactivated"
 }
 
 export enum EntityTypes {

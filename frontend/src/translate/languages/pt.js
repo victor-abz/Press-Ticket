@@ -1623,8 +1623,8 @@ const messages = {
         }
       },
       sessionExpiredModal: {
-        title: "Sessão Encerrada por Inatividade",
-        message: "Sua sessão foi encerrada automaticamente por exceder o tempo de inatividade configurado. Clique em confirmar para ser redirecionado à tela de login.",
+        title: "Sessão Encerrada",
+        message: "Sua sessão foi encerrada. Clique em confirmar para ser redirecionado à tela de login.",
         confirm: "Confirmar",
       },
       signup: {
@@ -1943,6 +1943,8 @@ const messages = {
           password: "Senha",
           passwordPlaceholder: "Digite a senha do atendente",
           toggleVisibility: "Mostrar/ocultar senha",
+          currentPassword: "Senha atual",
+          currentPasswordPlaceholder: "Digite sua senha atual para confirmar",
           profile: "Perfil",
           admin: "Administrador",
           user: "Atendente",
@@ -1960,6 +1962,7 @@ const messages = {
           cancel: "Cancelar",
         },
         success: "Atendente salvo com sucesso.",
+        passwordChanged: "Senha alterada com sucesso.",
       },
       notificameHubModal: {
         title: "Ativar Canais NotificameHub",
@@ -2409,6 +2412,7 @@ const messages = {
         ERR_EDITING_WAPP_MSG: "Não foi possível editar a mensagem do WhatsApp.",
         ERR_FETCH_WAPP_MSG: "Erro ao buscar a mensagem no WhatsApp, talvez ela seja muito antiga.",
         ERR_INVALID_CREDENTIALS: "Erro de autenticação. Por favor, tente novamente.",
+        ERR_INVALID_PASSWORD: "Senha atual incorreta.",
         ERR_NO_CONTACT_FOUND: "Nenhum contato encontrado com este ID.",
         ERR_NO_DEF_WAPP_FOUND: "Nenhum WhatsApp padrão encontrado. Verifique a página de canais.",
         ERR_NO_INTEGRATION_FOUND: "Integração não encontrada.",

@@ -224,10 +224,14 @@ export const resetPassword = async (
     throw new AppError("Token inválido ou expirado.", 400);
   }
 
-  user.password = newPassword;
-  user.passwordResetToken = null;
-  user.passwordResetExpires = null;
-  await user.save();
+  const newTokenVersion = user.tokenVersion + 1;
+
+  await user.update({
+    password: newPassword,
+    passwordResetToken: null,
+    passwordResetExpires: null,
+    tokenVersion: newTokenVersion
+  });
 
   // LOG: Senha redefinida
   const clientIp = GetClientIp(req);
@@ -241,7 +245,8 @@ export const resetPassword = async (
       ip: clientIp,
       additionalData: {
         email: user.email,
-        action: "reset_password"
+        action: "reset_password",
+        tokenVersion: newTokenVersion
       }
     });
   } catch (error) {

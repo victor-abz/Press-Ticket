@@ -31,6 +31,7 @@ import {
 import {
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from "react";
@@ -132,6 +133,7 @@ const UserModal = ({ open, onClose, userId }) => {
 		name: "",
 		email: "",
 		password: "",
+		currentPassword: "",
 		profile: "user",
 		startWork: "00:00",
 		endWork: "23:59",
@@ -144,8 +146,21 @@ const UserModal = ({ open, onClose, userId }) => {
 	const [selectedQueueIds, setSelectedQueueIds] = useState([]);
 	const [selectedWhatsappIds, setSelectedWhatsappIds] = useState([]);
 	const [showPassword, setShowPassword] = useState(false);
+	const [showCurrentPassword, setShowCurrentPassword] = useState(false);
 	const startWorkRef = useRef();
 	const endWorkRef = useRef();
+
+	const isSelfEdit = Boolean(userId) && Boolean(loggedInUser?.id) && String(loggedInUser.id) === String(userId);
+
+	const validationSchema = useMemo(() => {
+		if (!isSelfEdit) return UserSchema;
+		return UserSchema.shape({
+			currentPassword: Yup.string().when("password", {
+				is: password => Boolean(password),
+				then: schema => schema.required("Required"),
+			}),
+		});
+	}, [isSelfEdit]);
 
 	useEffect(() => {
 		const fetchUser = async () => {
@@ -172,8 +187,12 @@ const UserModal = ({ open, onClose, userId }) => {
 		setUser(initialState);
 	};
 
-	const handleSaveUser = async values => {
-		const userData = { ...values, whatsappIds: selectedWhatsappIds, queueIds: selectedQueueIds };
+	const handleSaveUser = async (values, { setFieldError } = {}) => {
+		const { currentPassword, ...rest } = values;
+		const userData = { ...rest, whatsappIds: selectedWhatsappIds, queueIds: selectedQueueIds };
+		if (isSelfEdit && currentPassword) {
+			userData.currentPassword = currentPassword;
+		}
 		try {
 			let response;
 			if (userId) {
@@ -181,14 +200,27 @@ const UserModal = ({ open, onClose, userId }) => {
 			} else {
 				response = await api.post("/users", userData);
 			}
-			toast.success(t("userModal.success"));
+
+			if (response?.data?.token) {
+				localStorage.setItem("token", JSON.stringify(response.data.token));
+				api.defaults.headers.Authorization = `Bearer ${response.data.token}`;
+				toast.success(t("userModal.passwordChanged"));
+			} else {
+				toast.success(t("userModal.success"));
+			}
+
 			if (onClose) {
 				onClose(response.data);
 			}
+			handleClose();
 		} catch (err) {
+			if (err?.response?.data?.error === "ERR_INVALID_PASSWORD" && setFieldError) {
+				setFieldError("currentPassword", t("backendErrors.ERR_INVALID_PASSWORD"));
+				return;
+			}
 			toastError(err, t);
+			handleClose();
 		}
-		handleClose();
 	};
 
 	return (
@@ -218,15 +250,15 @@ const UserModal = ({ open, onClose, userId }) => {
 				<Formik
 					initialValues={user}
 					enableReinitialize={true}
-					validationSchema={UserSchema}
+					validationSchema={validationSchema}
 					onSubmit={(values, actions) => {
 						setTimeout(() => {
-							handleSaveUser(values);
+							handleSaveUser(values, actions);
 							actions.setSubmitting(false);
 						}, 400);
 					}}
 				>
-					{({ touched, errors, isSubmitting }) => (
+					{({ touched, errors, isSubmitting, values }) => (
 						<Form>
 							<DialogContent dividers>
 								<MultFieldLine>
@@ -272,6 +304,39 @@ const UserModal = ({ open, onClose, userId }) => {
 										fullWidth
 									/>
 								</MultFieldLine>
+								{isSelfEdit && values.password && (
+									<MultFieldLine>
+										<Field
+											as={StyledTextField}
+											name="currentPassword"
+											variant="outlined"
+											margin="dense"
+											label={t("userModal.form.currentPassword")}
+											error={touched.currentPassword && Boolean(errors.currentPassword)}
+											helperText={touched.currentPassword && errors.currentPassword}
+											type={showCurrentPassword ? "text" : "password"}
+											placeholder={t("userModal.form.currentPasswordPlaceholder")}
+											InputProps={{
+												sx: { borderRadius: 8 },
+												endAdornment: (
+													<InputAdornment position="end">
+														<Tooltip title={t("userModal.form.toggleVisibility")} arrow placement="top">
+															<IconButton
+																aria-label="toggle current password visibility"
+																onClick={() => setShowCurrentPassword((e) => !e)}
+																size="small"
+																color="primary"
+															>
+																{showCurrentPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+															</IconButton>
+														</Tooltip>
+													</InputAdornment>
+												)
+											}}
+											fullWidth
+										/>
+									</MultFieldLine>
+								)}
 								<MultFieldLine>
 									<Field
 										as={StyledTextField}

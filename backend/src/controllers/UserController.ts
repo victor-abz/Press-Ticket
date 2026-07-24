@@ -17,6 +17,7 @@ import {
   EntityTypes
 } from "../services/ActivityLogService";
 import GetClientIp from "../helpers/GetClientIp";
+import { SendRefreshToken } from "../helpers/SendRefreshToken";
 
 type IndexQuery = {
   searchParam: string;
@@ -129,30 +130,85 @@ export const update = async (
   }
 
   const userData = req.body;
+  const isSelf = sessionUserId === newUserId;
+  const isPasswordChange =
+    typeof userData.password === "string" && userData.password.length > 0;
 
-  const user = await UpdateUserService({ userData, userId });
+  let isDeactivation = false;
+  if (userData.active === false) {
+    const userBeforeUpdate = await User.findByPk(userId, {
+      attributes: ["active"]
+    });
+    isDeactivation = userBeforeUpdate?.active !== false;
+  }
+
+  const result = await UpdateUserService({
+    userData,
+    userId,
+    requestUserId: req.user.id
+  });
   const logUserId = req.user?.id || 1;
   const clientIp = GetClientIp(req);
 
-  if (user) {
-    await createActivityLog({
-      userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
-      action: ActivityActions.UPDATE,
-      description: `Usuário ${user.name} (${user.email}) atualizado`,
-      entityType: EntityTypes.USER,
-      entityId: user.id,
-      ip: clientIp,
-      additionalData: userData
-    });
+  if (result) {
+    if (isPasswordChange && isSelf) {
+      await createActivityLog({
+        userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
+        action: ActivityActions.PASSWORD_CHANGED,
+        description: `Usuário ${result.name} (${result.email}) alterou a própria senha`,
+        entityType: EntityTypes.USER,
+        entityId: result.id,
+        ip: clientIp
+      });
+    } else if (isPasswordChange) {
+      await createActivityLog({
+        userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
+        action: ActivityActions.ADMIN_PASSWORD_RESET,
+        description: `Admin redefiniu a senha do usuário ${result.name} (${result.email})`,
+        entityType: EntityTypes.USER,
+        entityId: result.id,
+        ip: clientIp
+      });
+    } else if (isDeactivation) {
+      await createActivityLog({
+        userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
+        action: ActivityActions.ACCOUNT_DEACTIVATED,
+        description: `Admin desativou a conta do usuário ${result.name} (${result.email})`,
+        entityType: EntityTypes.USER,
+        entityId: result.id,
+        ip: clientIp
+      });
+    } else {
+      await createActivityLog({
+        userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
+        action: ActivityActions.UPDATE,
+        description: `Usuário ${result.name} (${result.email}) atualizado`,
+        entityType: EntityTypes.USER,
+        entityId: result.id,
+        ip: clientIp,
+        additionalData: userData
+      });
+    }
+  }
+
+  if (!result) {
+    return res.status(200).json(result);
+  }
+
+  const { refreshToken, ...responseBody } = result;
+  const { token: _token, ...broadcastUser } = responseBody;
+
+  if (refreshToken) {
+    SendRefreshToken(res, refreshToken);
   }
 
   const io = getIO();
   io.emit("user", {
     action: "update",
-    user
+    user: broadcastUser
   });
 
-  return res.status(200).json(user);
+  return res.status(200).json(responseBody);
 };
 
 export const remove = async (

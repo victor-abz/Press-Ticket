@@ -9,6 +9,44 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 > Mudanças em desenvolvimento que ainda não foram lançadas em uma versão oficial.
 
+### 🔒 Segurança
+
+- **feat(security): invalidação imediata de sessão via `tokenVersion`** — o campo
+  `tokenVersion` (já existente na tabela `Users` e já usado na emissão/validação do
+  refresh token) passou a ser incluído também no payload do access token
+  (`createAccessToken`, em `backend/src/helpers/CreateTokens.ts`) e validado a cada
+  request pelo `isAuth` (`backend/src/middleware/isAuth.ts`), na mesma consulta que já
+  buscava `active` — sem query extra por request. Divergência de `tokenVersion` retorna
+  `AppError("ERR_SESSION_EXPIRED", 401)`, a mesma mensagem genérica usada para conta
+  inativa, sem revelar o motivo real ao cliente.
+- Troca da própria senha (`PUT /users/:userId`, exigindo o novo campo `currentPassword`
+  validado via `checkPassword`) incrementa `tokenVersion` e a senha no mesmo
+  `.update()` atômico, e a resposta passa a incluir um novo access token (`token`) e um
+  novo refresh token via cookie `httpOnly` (`jrt`) — a sessão continua ativa sem exigir
+  novo login.
+- Admin redefinindo a senha de outro usuário, ou desativando uma conta (`active:
+  false`), também incrementa `tokenVersion`, porém **sem** emitir token na resposta — o
+  admin não assume a sessão do usuário afetado, que passa a ser invalidada no próximo
+  request dele.
+- Fluxo de "esqueci minha senha" (`resetPassword`, em
+  `backend/src/controllers/SessionController.ts`) agora incrementa `tokenVersion`
+  atomicamente junto com a nova senha, fechando o cenário mais crítico: conta
+  comprometida usando reset de senha para expulsar o invasor de sessões já abertas.
+- Novo erro `ERR_INVALID_PASSWORD` (401) para senha atual incorreta na troca
+  self-service.
+- Corrigido bug pré-existente no catch-all do `isAuth` que mascarava qualquer
+  `AppError` lançado dentro do bloco `try` como `ERR_INVALID_TOKEN` genérico.
+- Novas ações de auditoria em `ActivityLogService`: `PASSWORD_CHANGED`,
+  `ADMIN_PASSWORD_RESET`, `ACCOUNT_DEACTIVATED`.
+- Frontend (`UserModal`): exige `currentPassword` (via Yup) apenas na autoedição com
+  troca de senha; consome o `token` retornado usando o mesmo mecanismo de
+  armazenamento do login (`localStorage` + header `Authorization`); trata
+  `ERR_INVALID_PASSWORD` inline no campo. Texto do `SessionExpiredModal` generalizado
+  em `pt`/`en`/`es` — não atribui mais a expiração de sessão apenas à inatividade.
+- 11 novos testes em `backend/src/__tests__/unit/Auth/tokenVersion.spec.ts`; suíte
+  completa de Auth + User validada em 49/49, sem regressões.
+- `docs/erd.md` atualizado com o campo `tokenVersion` no nó `USER`.
+
 ---
 
 ## [v1.16.3] - 2026-05-22

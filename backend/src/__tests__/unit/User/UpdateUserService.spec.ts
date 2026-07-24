@@ -4,6 +4,16 @@ import CreateUserService from "../../../services/UserServices/CreateUserService"
 import UpdateUserService from "../../../services/UserServices/UpdateUserService";
 import { disconnect, truncate } from "../../utils/database";
 
+jest.mock("../../../config/auth", () => ({
+  __esModule: true,
+  default: {
+    secret: "test_jwt_secret",
+    expiresIn: "8h",
+    refreshSecret: "test_jwt_refresh_secret",
+    refreshExpiresIn: "1d"
+  }
+}));
+
 describe("User", () => {
   beforeEach(async () => {
     await truncate();

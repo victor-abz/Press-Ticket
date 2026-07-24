@@ -6,7 +6,12 @@ export const createAccessToken = (user: User): string => {
   const { secret, expiresIn } = authConfig;
 
   return sign(
-    { username: user.name, profile: user.profile, id: user.id },
+    {
+      username: user.name,
+      profile: user.profile,
+      id: user.id,
+      tokenVersion: user.tokenVersion
+    },
     secret,
     {
       expiresIn

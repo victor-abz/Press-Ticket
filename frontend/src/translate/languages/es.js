@@ -812,6 +812,11 @@ const messages = {
             },
           }
         },
+        sessionExpiredModal: {
+          title: "Sesión Finalizada",
+          message: "Su sesión ha finalizado. Haga clic en confirmar para ser redirigido a la pantalla de inicio de sesión.",
+          confirm: "Confirmar",
+        },
         signup: {
           title: "Regístrate",
           toasts: {
@@ -1020,6 +1025,8 @@ const messages = {
             name: "Nombre",
             email: "Correo electrónico",
             password: "Contraseña",
+            currentPassword: "Contraseña actual",
+            currentPasswordPlaceholder: "Ingrese su contraseña actual para confirmar",
             profile: "Perfil",
             admin: "Administrador",
             user: "Agente",
@@ -1037,6 +1044,7 @@ const messages = {
             cancel: "Cancelar",
           },
           success: "Agente guardado con éxito.",
+          passwordChanged: "Contraseña cambiada con éxito.",
         },
         whatsappModal: {
           title: {
@@ -1102,6 +1110,7 @@ const messages = {
           ERR_EDITING_WAPP_MSG: "No se pudo editar el mensaje de WhatsApp.",
           ERR_FETCH_WAPP_MSG: "Error al obtener el mensaje en WhatsApp, puede que sea muy antiguo.",
           ERR_INVALID_CREDENTIALS: "Error de autenticación. Por favor, inténtelo nuevamente.",
+          ERR_INVALID_PASSWORD: "La contraseña actual es incorrecta.",
           ERR_NO_CONTACT_FOUND: "No se encontró ningún contacto con este ID.",
           ERR_NO_DEF_WAPP_FOUND: "No se encontró un WhatsApp predeterminado. Verifique la página de canales.",
           ERR_NO_INTEGRATION_FOUND: "Integración no encontrada.",

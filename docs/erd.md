@@ -28,6 +28,7 @@ erDiagram
         int     loginAttempts
         date    lockedUntil
         int     lockCount
+        int     tokenVersion
     }
 
     CONTACT {
