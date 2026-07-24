@@ -23,6 +23,7 @@ import Ticket from "../../models/Ticket";
 import { debounce } from "../../helpers/Debounce";
 import { decryptValue } from "../../helpers/EncryptionHelper";
 import formatBody from "../../helpers/Mustache";
+import { sanitizeMessageBody } from "../../helpers/sanitizeMessageBody";
 import { getIO } from "../../libs/socket";
 import { logger } from "../../utils/logger";
 import CreateContactService from "../ContactServices/CreateContactService";
@@ -388,6 +389,8 @@ const verifyMessage = async (
       }
     });
   }
+
+  pollBody = sanitizeMessageBody(pollBody);
 
   const messageData = {
     id: msg.id.id,
@@ -1616,9 +1619,12 @@ const handleMsgAck = async (msg: WbotMessage, ack: MessageAck) => {
 
 const handleMsgEdit = async (
   msg: WbotMessage,
-  newBody: string,
-  oldBody: string
+  rawNewBody: string,
+  rawOldBody: string
 ): Promise<void> => {
+  const newBody = sanitizeMessageBody(rawNewBody);
+  const oldBody = sanitizeMessageBody(rawOldBody);
+
   const editedMsg = await Message.findByPk(msg.id.id, {
     include: [
       {
@@ -1734,7 +1740,7 @@ const wbotMessageListener = async (wbot: Session): Promise<void> => {
   wbot.on("message_revoke_everyone", async (after, before) => {
     const msgBody: string | undefined = before?.body;
     if (msgBody !== undefined) {
-      verifyRevoked(msgBody || "");
+      verifyRevoked(sanitizeMessageBody(msgBody || ""));
     }
   });
 

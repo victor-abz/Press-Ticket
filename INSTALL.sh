@@ -834,6 +834,16 @@ else
     finalizar "${RED}Erro ao gerar JWT_REFRESH_SECRET.${RESET}" 1
 fi
 
+# Gerando a chave HUB_WEBHOOK_SECRET para validação de webhooks NotificameHub
+echo -e "${COLOR}Gerando a chave HUB_WEBHOOK_SECRET...${RESET}" | tee -a "$LOG_FILE"
+HUB_WEBHOOK_SECRET=$(openssl rand -hex 32)
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}HUB_WEBHOOK_SECRET gerado com sucesso.${RESET}" | tee -a "$LOG_FILE"
+else
+    echo -e "${RED}Erro ao gerar HUB_WEBHOOK_SECRET.${RESET}"
+    finalizar "${RED}Erro ao gerar HUB_WEBHOOK_SECRET.${RESET}" 1
+fi
+
 # Editando o arquivo .env
 echo -e "${COLOR}Criando o arquivo .env com as configurações...${RESET}" | tee -a "$LOG_FILE"
 cat <<EOF >"$DEPLOY_HOME/$NOME_EMPRESA/backend/.env"
@@ -878,6 +888,10 @@ JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET
 
 # Telemetria Anônima (true para habilitar, false para desabilitar)
 ALLOW_TELEMETRY=true
+
+# Segredo para validação de webhooks NotificameHub
+# Gerado automaticamente — não alterar sem re-inscrever os canais
+HUB_WEBHOOK_SECRET=$HUB_WEBHOOK_SECRET
 EOF
 
 if [ $? -eq 0 ]; then
@@ -1288,6 +1302,12 @@ echo -e "${BOLD}---------------------------------------${RESET}" | tee -a "$LOG_
 echo -e "${BOLD}Usuário Master para Acesso${RESET}" | tee -a "$LOG_FILE"
 echo -e "${BOLD}Usuário:${RESET} ${MASTERADMIN_EMAIL}" | tee -a "$LOG_FILE"
 echo -e "${BOLD}Senha:${RESET} masteradmin" | tee -a "$LOG_FILE"
+echo -e "${GREEN}---------------------------------------${RESET}" | tee -a "$LOG_FILE"
+echo -e "${BOLD}---------------------------------------${RESET}" | tee -a "$LOG_FILE"
+echo -e "${BOLD}Integração NotificameHub${RESET}" | tee -a "$LOG_FILE"
+echo -e "${BOLD}HUB_WEBHOOK_SECRET:${RESET} $HUB_WEBHOOK_SECRET" | tee -a "$LOG_FILE"
+echo -e "${YELLOW}Atenção: ao conectar canais NotificameHub, a URL do webhook será" | tee -a "$LOG_FILE"
+echo -e "  https://$URL_BACKEND/hub-webhook?token=$HUB_WEBHOOK_SECRET${RESET}" | tee -a "$LOG_FILE"
 echo -e "${GREEN}---------------------------------------${RESET}" | tee -a "$LOG_FILE"
 
 # Mensagem final

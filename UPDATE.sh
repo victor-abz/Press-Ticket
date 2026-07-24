@@ -775,6 +775,33 @@ if [ -f "$ENV_FILE" ]; then
         echo "A variável ALLOW_TELEMETRY=true foi adicionada ao arquivo .env." | tee -a "$LOG_FILE"
     fi
 
+    # Verifica se a variável HUB_WEBHOOK_SECRET existe no arquivo .env
+    if grep -q "^HUB_WEBHOOK_SECRET=" "$ENV_FILE"; then
+        echo "A variável HUB_WEBHOOK_SECRET já existe no arquivo .env. Nenhuma alteração necessária." | tee -a "$LOG_FILE"
+    else
+        echo -e "${YELLOW}HUB_WEBHOOK_SECRET não encontrado. Gerando novo segredo...${RESET}" | tee -a "$LOG_FILE"
+        NEW_HUB_SECRET=$(openssl rand -hex 32)
+        if [ $? -eq 0 ]; then
+            echo "" >> "$ENV_FILE"
+            echo "# Segredo para validação de webhooks NotificameHub" >> "$ENV_FILE"
+            echo "# Gerado automaticamente — após adicionar, re-inscreva os canais NotificameHub" >> "$ENV_FILE"
+            echo "HUB_WEBHOOK_SECRET=$NEW_HUB_SECRET" >> "$ENV_FILE"
+            echo -e "${GREEN}HUB_WEBHOOK_SECRET gerado e adicionado ao arquivo .env com sucesso.${RESET}" | tee -a "$LOG_FILE"
+            echo -e "${YELLOW}╔══════════════════════════════════════════════════════════════╗${RESET}" | tee -a "$LOG_FILE"
+            echo -e "${YELLOW}║  ATENÇÃO — AÇÃO OBRIGATÓRIA APÓS O DEPLOY                  ║${RESET}" | tee -a "$LOG_FILE"
+            echo -e "${YELLOW}║  Re-inscreva os canais NotificameHub em produção com        ║${RESET}" | tee -a "$LOG_FILE"
+            echo -e "${YELLOW}║  a nova URL de webhook que inclui o token gerado.           ║${RESET}" | tee -a "$LOG_FILE"
+            echo -e "${YELLOW}║  HUB_WEBHOOK_SECRET: $NEW_HUB_SECRET  ║${RESET}" | tee -a "$LOG_FILE"
+            echo -e "${YELLOW}╚══════════════════════════════════════════════════════════════╝${RESET}" | tee -a "$LOG_FILE"
+        else
+            echo -e "${RED}Erro ao gerar HUB_WEBHOOK_SECRET. Adicionando variável vazia para revisão manual.${RESET}" | tee -a "$LOG_FILE"
+            echo "" >> "$ENV_FILE"
+            echo "# ATENÇÃO: geração automática falhou — definir manualmente" >> "$ENV_FILE"
+            echo "# Execute: openssl rand -hex 32" >> "$ENV_FILE"
+            echo "HUB_WEBHOOK_SECRET=" >> "$ENV_FILE"
+        fi
+    fi
+
 else
     echo "Erro: O arquivo .env não foi encontrado no diretório backend."
     finalizar "Erro ao localizar o arquivo .env no backend." 1
