@@ -1569,6 +1569,17 @@ const messages = {
               "168": "7 dias",
             },
           },
+          inactivityTimeout: {
+            name: "Timeout de inatividade:",
+            note: "Tempo sem interação do atendente antes do logout automático por inatividade",
+            options: {
+              "0": "Desativado",
+              "15": "15 minutos",
+              "30": "30 minutos (padrão)",
+              "60": "1 hora",
+              "120": "2 horas",
+            },
+          },
           notifyQueueUsersMessage: {
             title: "Notificação WhatsApp para Atendentes",
             name: "Mensagem de Notificação de Novo Ticket",
@@ -1626,6 +1637,13 @@ const messages = {
         title: "Sessão Encerrada",
         message: "Sua sessão foi encerrada. Clique em confirmar para ser redirecionado à tela de login.",
         confirm: "Confirmar",
+      },
+      inactivity: {
+        warningTitle: "Sessão prestes a expirar",
+        warningMessage: "Você ficará desconectado em {{time}} por inatividade. Deseja continuar conectado?",
+        continueSession: "Continuar conectado",
+        logoutNow: "Sair agora",
+        sessionExpiredToast: "Sessão encerrada por inatividade.",
       },
       signup: {
         title: "Cadastre-se",

@@ -788,6 +788,17 @@ const messages = {
               "2592000": "30 days",
             },
           },
+          inactivityTimeout: {
+            name: "Inactivity timeout:",
+            note: "Time without agent interaction before automatic logout due to inactivity",
+            options: {
+              "0": "Disabled",
+              "15": "15 minutes",
+              "30": "30 minutes (default)",
+              "60": "1 hour",
+              "120": "2 hours",
+            },
+          },
         },
         personalize: {
           success: {
@@ -837,6 +848,13 @@ const messages = {
         title: "Session Ended",
         message: "Your session has ended. Click confirm to be redirected to the login screen.",
         confirm: "Confirm",
+      },
+      inactivity: {
+        warningTitle: "Session about to expire",
+        warningMessage: "You will be logged out in {{time}} due to inactivity. Do you want to stay connected?",
+        continueSession: "Stay connected",
+        logoutNow: "Log out now",
+        sessionExpiredToast: "Session ended due to inactivity.",
       },
       signup: {
         title: "Sign up",

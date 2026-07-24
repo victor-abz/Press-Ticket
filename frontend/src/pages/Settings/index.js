@@ -192,7 +192,7 @@ const Settings = ({ toggleTheme, onThemeConfigUpdate }) => {
 
 	const tabList = [
 		{ key: "personalize", label: t("settings.tabs.personalize"), component: <Personalize toggleTheme={toggleTheme} onThemeConfigUpdate={onThemeConfigUpdate} /> },
-		{ key: "general", label: t("settings.tabs.general"), component: <ComponentSettings settings={settings} getSettingValue={getSettingValue} handleChangeBooleanSetting={handleChangeBooleanSetting} handleChangeSetting={handleChangeSetting} /> },
+		{ key: "general", label: t("settings.tabs.general"), component: <ComponentSettings settings={settings} getSettingValue={getSettingValue} handleChangeBooleanSetting={handleChangeBooleanSetting} handleChangeSetting={handleChangeSetting} user={user} /> },
 		{ key: "integrations", label: t("settings.tabs.integrations"), component: <Integrations /> },
 		{ key: "whatsappProfile", label: t("profileSettings.title"), component: <WhatsAppProfilePanel /> }
 	];

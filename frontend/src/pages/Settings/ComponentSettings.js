@@ -64,8 +64,9 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
     },
 }));
 
-const ComponentSettings = ({ settings, getSettingValue, handleChangeBooleanSetting, handleChangeSetting }) => {
+const ComponentSettings = ({ settings, getSettingValue, handleChangeBooleanSetting, handleChangeSetting, user }) => {
     const { t } = useTranslation();
+    const isAdminOrMaster = user?.profile === "admin" || user?.profile === "masteradmin";
 
     const booleanSettings = [
         { key: "userCreation", label: t("settings.general.userCreation.name"), note: t("settings.general.userCreation.note") },
@@ -289,6 +290,29 @@ const ComponentSettings = ({ settings, getSettingValue, handleChangeBooleanSetti
                             </Select>
                         </StyledFormControl>
                     </SettingItem>
+                    {isAdminOrMaster && (
+                        <SettingItem>
+                            <Tooltip title={t("settings.general.inactivityTimeout.note")} placement="top-start">
+                                <Typography variant="body1">
+                                    {t("settings.general.inactivityTimeout.name")}
+                                </Typography>
+                            </Tooltip>
+                            <StyledFormControl variant="outlined" size="small">
+                                <Select
+                                    id="inactivityTimeout-setting"
+                                    name="inactivityTimeout"
+                                    value={settings && settings.length > 0 ? (getSettingValue("inactivityTimeout") || "30") : "30"}
+                                    onChange={handleChangeSetting}
+                                >
+                                    <MenuItem value="0">{t("settings.general.inactivityTimeout.options.0")}</MenuItem>
+                                    <MenuItem value="15">{t("settings.general.inactivityTimeout.options.15")}</MenuItem>
+                                    <MenuItem value="30">{t("settings.general.inactivityTimeout.options.30")}</MenuItem>
+                                    <MenuItem value="60">{t("settings.general.inactivityTimeout.options.60")}</MenuItem>
+                                    <MenuItem value="120">{t("settings.general.inactivityTimeout.options.120")}</MenuItem>
+                                </Select>
+                            </StyledFormControl>
+                        </SettingItem>
+                    )}
                 </SettingCard>
             </Grid>
 

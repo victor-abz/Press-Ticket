@@ -767,6 +767,17 @@ const messages = {
                 "2592000": "30 días",
               },
             },
+            inactivityTimeout: {
+              name: "Tiempo de inactividad:",
+              note: "Tiempo sin interacción del agente antes del cierre de sesión automático por inactividad",
+              options: {
+                "0": "Desactivado",
+                "15": "15 minutos",
+                "30": "30 minutos (predeterminado)",
+                "60": "1 hora",
+                "120": "2 horas",
+              },
+            },
           },
           personalize: {
             success: {
@@ -816,6 +827,13 @@ const messages = {
           title: "Sesión Finalizada",
           message: "Su sesión ha finalizado. Haga clic en confirmar para ser redirigido a la pantalla de inicio de sesión.",
           confirm: "Confirmar",
+        },
+        inactivity: {
+          warningTitle: "Sesión a punto de expirar",
+          warningMessage: "Será desconectado en {{time}} por inactividad. ¿Desea continuar conectado?",
+          continueSession: "Continuar conectado",
+          logoutNow: "Cerrar sesión ahora",
+          sessionExpiredToast: "Sesión cerrada por inactividad.",
         },
         signup: {
           title: "Regístrate",
