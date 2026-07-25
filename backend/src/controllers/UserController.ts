@@ -135,11 +135,17 @@ export const update = async (
     typeof userData.password === "string" && userData.password.length > 0;
 
   let isDeactivation = false;
+  let isReactivation = false;
   if (userData.active === false) {
     const userBeforeUpdate = await User.findByPk(userId, {
       attributes: ["active"]
     });
     isDeactivation = userBeforeUpdate?.active !== false;
+  } else if (userData.active === true) {
+    const userBeforeUpdate = await User.findByPk(userId, {
+      attributes: ["active"]
+    });
+    isReactivation = userBeforeUpdate?.active === false;
   }
 
   const result = await UpdateUserService({
@@ -178,6 +184,15 @@ export const update = async (
         entityId: result.id,
         ip: clientIp
       });
+    } else if (isReactivation) {
+      await createActivityLog({
+        userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
+        action: ActivityActions.USER_REACTIVATED,
+        description: `Admin reativou a conta do usuário ${result.name} (${result.email})`,
+        entityType: EntityTypes.USER,
+        entityId: result.id,
+        ip: clientIp
+      });
     } else {
       await createActivityLog({
         userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -186,7 +201,14 @@ export const update = async (
         entityType: EntityTypes.USER,
         entityId: result.id,
         ip: clientIp,
-        additionalData: userData
+        additionalData: {
+          name: userData.name,
+          profile: userData.profile,
+          email: userData.email,
+          active: userData.active,
+          queueIds: userData.queueIds,
+          whatsappIds: userData.whatsappIds
+        }
       });
     }
   }

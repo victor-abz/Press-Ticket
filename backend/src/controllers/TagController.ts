@@ -59,6 +59,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   });
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -66,6 +67,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     description: `Tag ${tag.name} criada`,
     entityType: EntityTypes.TAG,
     entityId: tag.id,
+    ip: clientIp,
     additionalData: {
       name: tag.name,
       color: tag.color
@@ -113,6 +115,7 @@ export const update = async (
     const tag = await UpdateService({ tagData, id: tagId });
 
     const logUserId = req.user?.id || 1;
+    const clientIp = GetClientIp(req);
 
     await createActivityLog({
       userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -120,6 +123,7 @@ export const update = async (
       description: `Tag ${tag.name} atualizada`,
       entityType: EntityTypes.TAG,
       entityId: tag.id,
+      ip: clientIp,
       additionalData: tagData
     });
 
@@ -150,6 +154,7 @@ export const remove = async (
   await DeleteService(tagId);
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -157,6 +162,7 @@ export const remove = async (
     description: `Tag ${tagToDelete.name} excluída`,
     entityType: EntityTypes.TAG,
     entityId: parseInt(tagId),
+    ip: clientIp,
     additionalData: {
       name: tagToDelete.name,
       color: tagToDelete.color

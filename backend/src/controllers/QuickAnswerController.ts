@@ -63,6 +63,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   });
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -70,6 +71,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     description: `Resposta rápida "${quickAnswer.shortcut}" criada`,
     entityType: EntityTypes.QUICKANSWER,
     entityId: quickAnswer.id,
+    ip: clientIp,
     additionalData: {
       shortcut: quickAnswer.shortcut,
       message: quickAnswer.message
@@ -123,6 +125,7 @@ export const update = async (
   });
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -130,6 +133,7 @@ export const update = async (
     description: `Resposta rápida "${quickAnswer.shortcut}" atualizada`,
     entityType: EntityTypes.QUICKANSWER,
     entityId: quickAnswer.id,
+    ip: clientIp,
     additionalData: quickAnswerData
   });
 
@@ -153,6 +157,7 @@ export const remove = async (
   await DeleteQuickAnswerService(quickAnswerId);
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -160,6 +165,7 @@ export const remove = async (
     description: `Resposta rápida "${quickAnswerToDelete.shortcut}" excluída`,
     entityType: EntityTypes.QUICKANSWER,
     entityId: parseInt(quickAnswerId),
+    ip: clientIp,
     additionalData: {
       shortcut: quickAnswerToDelete.shortcut,
       message: quickAnswerToDelete.message

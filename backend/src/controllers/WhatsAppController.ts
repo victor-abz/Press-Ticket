@@ -15,6 +15,7 @@ import {
   ActivityActions,
   EntityTypes
 } from "../services/ActivityLogService";
+import GetClientIp from "../helpers/GetClientIp";
 
 interface WhatsappData {
   name: string;
@@ -62,6 +63,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   StartWhatsAppSession(whatsapp);
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -69,6 +71,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     description: `Conexão WhatsApp ${whatsapp.name} criada`,
     entityType: EntityTypes.WHATSAPP,
     entityId: whatsapp.id,
+    ip: clientIp,
     additionalData: {
       name: whatsapp.name,
       isDefault: whatsapp.isDefault,
@@ -113,6 +116,7 @@ export const update = async (
   });
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -120,6 +124,7 @@ export const update = async (
     description: `Conexão WhatsApp ${whatsapp.name} atualizada`,
     entityType: EntityTypes.WHATSAPP,
     entityId: whatsapp.id,
+    ip: clientIp,
     additionalData: whatsappData
   });
 
@@ -151,6 +156,7 @@ export const remove = async (
   await removeWbot(+whatsappId);
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -158,6 +164,7 @@ export const remove = async (
     description: `Conexão WhatsApp ${whatsappToDelete.name} excluída`,
     entityType: EntityTypes.WHATSAPP,
     entityId: parseInt(whatsappId),
+    ip: clientIp,
     additionalData: {
       name: whatsappToDelete.name,
       status: whatsappToDelete.status

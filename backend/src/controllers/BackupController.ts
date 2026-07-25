@@ -14,6 +14,7 @@ import {
   ActivityActions,
   EntityTypes
 } from "../services/ActivityLogService";
+import GetClientIp from "../helpers/GetClientIp";
 
 interface BackupRequest {
   name?: string;
@@ -38,6 +39,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     const backupInfo = await createBackup(name);
 
     const logUserId = req.user?.id || 1;
+    const clientIp = GetClientIp(req);
 
     await createActivityLog({
       userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -45,6 +47,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
       description: `Backup "${backupInfo.filename}" criado`,
       entityType: EntityTypes.BACKUP,
       entityId: 0,
+      ip: clientIp,
       additionalData: {
         filename: backupInfo.filename,
         size: backupInfo.size
@@ -91,6 +94,23 @@ export const show = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const { size } = fs.statSync(filePath);
+    const logUserId = req.user?.id || 1;
+    const clientIp = GetClientIp(req);
+
+    await createActivityLog({
+      userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
+      action: ActivityActions.BACKUP_DOWNLOADED,
+      description: `Backup "${filename}" baixado`,
+      entityType: EntityTypes.BACKUP,
+      entityId: 0,
+      ip: clientIp,
+      additionalData: {
+        filename,
+        size
+      }
+    });
+
     res.download(filePath);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Erro interno";
@@ -108,6 +128,7 @@ export const update = async (
     const backupInfo = await restoreBackup(filename);
 
     const logUserId = req.user?.id || 1;
+    const clientIp = GetClientIp(req);
 
     await createActivityLog({
       userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -115,6 +136,7 @@ export const update = async (
       description: `Backup "${filename}" restaurado`,
       entityType: EntityTypes.BACKUP,
       entityId: 0,
+      ip: clientIp,
       additionalData: {
         filename,
         success: backupInfo.success,
@@ -148,6 +170,7 @@ export const upload = async (
     const backupInfo = await uploadBackup(req.file);
 
     const logUserId = req.user?.id || 1;
+    const clientIp = GetClientIp(req);
 
     await createActivityLog({
       userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -155,6 +178,7 @@ export const upload = async (
       description: `Backup "${backupInfo.filename}" importado`,
       entityType: EntityTypes.BACKUP,
       entityId: 0,
+      ip: clientIp,
       additionalData: {
         filename: backupInfo.filename,
         size: backupInfo.size
@@ -184,6 +208,7 @@ export const remove = async (
     const result = await deleteBackup(filename);
 
     const logUserId = req.user?.id || 1;
+    const clientIp = GetClientIp(req);
 
     await createActivityLog({
       userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -191,6 +216,7 @@ export const remove = async (
       description: `Backup "${filename}" excluído`,
       entityType: EntityTypes.BACKUP,
       entityId: 0,
+      ip: clientIp,
       additionalData: {
         filename,
         success: result.success,

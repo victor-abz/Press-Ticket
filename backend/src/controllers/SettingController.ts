@@ -50,8 +50,7 @@ export const update = async (
       entityId: setting.id,
       ip: clientIp,
       additionalData: {
-        key: setting.key,
-        value: setting.value
+        key: setting.key
       }
     });
 

@@ -157,6 +157,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 
   const logUserId = req.user?.id || 1;
   const contact = await Contact.findByPk(contactId);
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -164,6 +165,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     description: `Ticket #${ticket.id} criado para o contato ${contact?.name || contactId}`,
     entityType: EntityTypes.TICKET,
     entityId: ticket.id,
+    ip: clientIp,
     additionalData: { status, queueId, whatsappId }
   });
 

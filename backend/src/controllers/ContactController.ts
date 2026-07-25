@@ -40,6 +40,9 @@ type IndexQuery = {
   status?: string;
 };
 
+const truncateName = (name?: string): string | undefined =>
+  name ? `${name.substring(0, 2)}**` : undefined;
+
 export const getBlockStatus = async (
   req: Request,
   res: Response
@@ -148,7 +151,7 @@ export const blockContact = async (
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
     action: ActivityActions.UPDATE,
-    description: `Contato ${contact.name} (${contact.number}) bloqueado no WhatsApp (sessão ${sessionId})`,
+    description: `Contato ID ${contact.id} (${truncateName(contact.name)}) bloqueado no WhatsApp (sessão ${sessionId})`,
     entityType: EntityTypes.CONTACT,
     entityId: contact.id,
     ip: clientIp,
@@ -212,12 +215,14 @@ export const unblockContact = async (
   }
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
     action: ActivityActions.UPDATE,
-    description: `Contato ${contact.name} (${contact.number}) desbloqueado no WhatsApp (sessão ${sessionId})`,
+    description: `Contato ID ${contact.id} (${truncateName(contact.name)}) desbloqueado no WhatsApp (sessão ${sessionId})`,
     entityType: EntityTypes.CONTACT,
     entityId: contact.id,
+    ip: clientIp,
     additionalData: { whatsappId: sessionId }
   });
 
@@ -391,17 +396,18 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   });
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
     action: ActivityActions.CREATE,
-    description: `Contato ${contact.name} (${contact.number}) criado`,
+    description: `Contato ID ${contact.id} (${truncateName(contact.name)}) criado`,
     entityType: EntityTypes.CONTACT,
     entityId: contact.id,
+    ip: clientIp,
     additionalData: {
-      name: contact.name,
-      number: contact.number,
-      email: contact.email
+      contactId: contact.id,
+      nameTruncated: truncateName(contact.name)
     }
   });
 
@@ -448,14 +454,20 @@ export const update = async (
 
   const contact = await UpdateContactService({ contactData, contactId });
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
     action: ActivityActions.UPDATE,
-    description: `Contato ${contact.name} (${contact.number}) atualizado`,
+    description: `Contato ID ${contact.id} (${truncateName(contact.name)}) atualizado`,
     entityType: EntityTypes.CONTACT,
     entityId: contact.id,
-    additionalData: contactData
+    ip: clientIp,
+    additionalData: {
+      contactId: contact.id,
+      nameTruncated: truncateName(contact.name),
+      fieldsUpdated: Object.keys(contactData)
+    }
   });
 
   const io = getIO();
@@ -477,6 +489,7 @@ export const remove = async (
 
   await DeleteContactService(contactId);
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -484,6 +497,7 @@ export const remove = async (
     description: "Contato excluído",
     entityType: EntityTypes.CONTACT,
     entityId: parseInt(contactId),
+    ip: clientIp,
     additionalData: {
       contactId: parseInt(contactId)
     }
@@ -550,14 +564,16 @@ export const updateTags = async (
   });
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   if (contact) {
     await createActivityLog({
       userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
       action: ActivityActions.UPDATE,
-      description: `Tags do contato ${contact.name} atualizadas`,
+      description: `Tags do contato ID ${contact.id} (${truncateName(contact.name)}) atualizadas`,
       entityType: EntityTypes.CONTACT,
       entityId: contact.id,
+      ip: clientIp,
       additionalData: {
         tags: tags.map((tag: { id: number }) => ({ id: tag.id }))
       }
@@ -586,13 +602,15 @@ export const removeTag = async (
   });
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
     action: ActivityActions.UPDATE,
-    description: `Tag ${tagId} removida do contato ${contact.name}`,
+    description: `Tag ${tagId} removida do contato ID ${contact.id} (${truncateName(contact.name)})`,
     entityType: EntityTypes.CONTACT,
     entityId: contact.id,
+    ip: clientIp,
     additionalData: { tagId: +tagId }
   });
 

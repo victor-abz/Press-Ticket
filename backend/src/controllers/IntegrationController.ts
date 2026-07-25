@@ -49,8 +49,7 @@ export const update = async (
       entityId: integration.id,
       ip: clientIp,
       additionalData: {
-        key: integration.key,
-        value: integration.value
+        key: integration.key
       }
     });
   }

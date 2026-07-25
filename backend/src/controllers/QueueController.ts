@@ -10,6 +10,7 @@ import {
   ActivityActions,
   EntityTypes
 } from "../services/ActivityLogService";
+import GetClientIp from "../helpers/GetClientIp";
 
 export const index = async (req: Request, res: Response): Promise<Response> => {
   const queues = await ListQueuesService();
@@ -43,6 +44,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   });
 
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -50,6 +52,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     description: `Setor ${queue.name} criado`,
     entityType: EntityTypes.QUEUE,
     entityId: queue.id,
+    ip: clientIp,
     additionalData: {
       name,
       color,
@@ -83,6 +86,7 @@ export const update = async (
 
   const queue = await UpdateQueueService(queueId, req.body);
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -90,6 +94,7 @@ export const update = async (
     description: `Setor ${queue.name} atualizado`,
     entityType: EntityTypes.QUEUE,
     entityId: queue.id,
+    ip: clientIp,
     additionalData: req.body
   });
 
@@ -112,6 +117,7 @@ export const remove = async (
 
   await DeleteQueueService(queueId);
   const logUserId = req.user?.id || 1;
+  const clientIp = GetClientIp(req);
 
   await createActivityLog({
     userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
@@ -119,6 +125,7 @@ export const remove = async (
     description: `Setor ${queueToDelete.name} excluído`,
     entityType: EntityTypes.QUEUE,
     entityId: parseInt(queueId),
+    ip: clientIp,
     additionalData: {
       name: queueToDelete.name,
       color: queueToDelete.color

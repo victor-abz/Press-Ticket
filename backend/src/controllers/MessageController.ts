@@ -694,8 +694,6 @@ export const edit = async (req: Request, res: Response): Promise<Response> => {
       ip: clientIp,
       additionalData: {
         ticketId: message.ticketId,
-        oldBody: messageToEdit?.body?.substring(0, 100), // Primeiros 100 caracteres
-        newBody: body?.substring(0, 100),
         oldLength: messageToEdit?.body?.length || 0,
         newLength: body?.length || 0
       }
@@ -737,7 +735,7 @@ export const remove = async (
       ip: clientIp,
       additionalData: {
         ticketId: message.ticketId,
-        messageBody: messageToDelete?.body?.substring(0, 50), // Primeiros 50 caracteres
+        messageLength: messageToDelete?.body?.length || 0,
         mediaType: messageToDelete?.mediaType,
         fromMe: messageToDelete?.fromMe
       }
