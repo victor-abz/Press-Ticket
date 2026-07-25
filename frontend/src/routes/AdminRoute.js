@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from "../context/Auth/AuthContext";
 import BackdropLoading from "../components/BackdropLoading";
+import { AuthContext } from "../context/Auth/AuthContext";
 
 const AdminRoute = ({ element }) => {
   const { isAuth, loading, user } = useContext(AuthContext);
@@ -14,7 +14,7 @@ const AdminRoute = ({ element }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user?.profile?.toUpperCase() !== "ADMIN") {
+  if (user?.profile !== "admin" && user?.profile !== "masteradmin") {
     return <Navigate to="/" replace />;
   }
 

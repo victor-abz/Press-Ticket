@@ -1,7 +1,7 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import React, { useContext } from "react";
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import { AuthProvider } from "../context/Auth/AuthContext";
+import { AuthProvider, AuthContext } from "../context/Auth/AuthContext";
 import { WhatsAppsProvider } from "../context/WhatsApp/WhatsAppsContext";
 import LoggedInLayout from "../layout";
 import Api from "../pages/Api/";
@@ -46,6 +46,12 @@ import AdminRoute from "./AdminRoute";
 import MasterAdminRoute from "./MasterAdminRoute";
 import PublicRoute from "./PublicRoute";
 
+const ChannelsRoute = () => {
+  const { user } = useContext(AuthContext);
+  const canViewChannels = user?.profile === "admin" || user?.profile === "masteradmin";
+  return canViewChannels ? <Channels /> : <Navigate to="/" replace />;
+};
+
 const AppRoutes = ({ toggleTheme, onThemeConfigUpdate }) => {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -68,7 +74,7 @@ const AppRoutes = ({ toggleTheme, onThemeConfigUpdate }) => {
             <Route index element={<Dashboard />} />
             <Route path="documentation" element={<Documentation />} />
             <Route path="tickets/:ticketId?" element={<Tickets />} />
-            <Route path="channels" element={<Channels />} />
+            <Route path="channels" element={<ChannelsRoute />} />
             <Route path="contacts" element={<Contacts />} />
             <Route path="blocked-contacts" element={<AdminRoute element={<BlockedContacts />} />} />
             <Route path="users" element={<Users />} />

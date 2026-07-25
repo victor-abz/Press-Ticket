@@ -144,6 +144,9 @@ const ContactModal = ({ open, onClose, contactId, initialValues, onSave }) => {
 	const [loadingCep, setLoadingCep] = useState(false);
 	const [clientStatusList, setClientStatusList] = useState([]);
 
+	const isAdmin = user?.profile === "admin" || user?.profile === "masteradmin";
+	const canEditNumber = !contactId || isAdmin;
+
 	const formatPhoneNumber = (number) => {
 		if (!number) return "-";
 		if (number.startsWith('55') && number.length === 13) {
@@ -423,16 +426,14 @@ const ContactModal = ({ open, onClose, contactId, initialValues, onSave }) => {
 												placeholder="5522999999999" 
 												variant="outlined" 
 												fullWidth 
-												disabled={!!contactId || (user?.isTricked !== "enabled" && !!contactId)}
+												disabled={false}
 												value={
-													user?.isTricked === "enabled" 
+													canEditNumber
 														? values.number
-														: values.number 
-															? formatPhoneNumber(values.number).slice(0, -4) + "****"
-															: ""
+														: (values.number ? formatPhoneNumber(values.number).slice(0, -4) + "****" : "")
 												}
 												InputProps={{
-													readOnly: user?.isTricked !== "enabled" && !!contactId
+													readOnly: !canEditNumber
 												}}
 											/>
 										</FieldContainer>
