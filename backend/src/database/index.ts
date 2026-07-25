@@ -31,6 +31,7 @@ import WhatsappLabel from "../models/WhatsappLabel";
 import TicketLabel from "../models/TicketLabel";
 import Email from "../models/Email";
 import EmailAttachment from "../models/EmailAttachment";
+import WebhookEvent from "../models/WebhookEvent";
 
 const dbConfig = require("../config/database");
 
@@ -68,7 +69,8 @@ const models = [
   WhatsappLabel,
   TicketLabel,
   Email,
-  EmailAttachment
+  EmailAttachment,
+  WebhookEvent
 ];
 
 sequelize.addModels(models);
