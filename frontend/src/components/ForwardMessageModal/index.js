@@ -181,7 +181,7 @@ const ForwardMessageModal = ({ open, onClose, selectedMessages }) => {
                 </ListItemAvatar>
                 <ListItemText
                   primary={contact.name}
-                  secondary={contact.number}
+                  secondary={(contact.number || "").slice(0, -4) + "****"}
                 />
               </ListItem>
             ))}

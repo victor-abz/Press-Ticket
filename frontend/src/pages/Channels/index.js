@@ -917,9 +917,7 @@ const Channels = () => {
 											<DetailLabel>Número:</DetailLabel>
 											<DetailValue>
 												{whatsApp.number ? (
-													user.isTricked === "enabled" 
-														? formatPhoneNumber(whatsApp.number) 
-														: formatPhoneNumber(whatsApp.number).slice(0, -4) + "****"
+													formatPhoneNumber(whatsApp.number).slice(0, -4) + "****"
 												) : "-"}
 											</DetailValue>
 										</DetailRow>
@@ -1171,7 +1169,7 @@ const Channels = () => {
 										<TableCell align="center">
 											{whatsApp.number ? (
 												<>
-													{user.isTricked === "enabled" ? formatPhoneNumber(whatsApp.number) : formatPhoneNumber(whatsApp.number).slice(0, -4) + "****"}
+													{formatPhoneNumber(whatsApp.number).slice(0, -4) + "****"}
 												</>
 											) : "-"}
 										</TableCell>

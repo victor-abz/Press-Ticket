@@ -428,7 +428,7 @@ const VcardPreview = ({ contact, numbers }) => {
                                         return (
                                             <Box key={index} sx={{ mb: index < selectedContact.allNumbers.length - 1 ? 1 : 0 }}>
                                                 <ContactNumber>
-                                                    {numberText || t("vcardPreview.numberNotAvailable")}
+                                                    {numberText ? numberText.slice(0, -4) + "****" : t("vcardPreview.numberNotAvailable")}
                                                 </ContactNumber>
                                                 <LabelText>
                                                     {isMobile ? 
@@ -442,7 +442,7 @@ const VcardPreview = ({ contact, numbers }) => {
                                 ) : (
                                     <Box>
                                         <ContactNumber>
-                                            {selectedContact.number || t("vcardPreview.numberNotAvailable")}
+                                            {selectedContact.number ? selectedContact.number.slice(0, -4) + "****" : t("vcardPreview.numberNotAvailable")}
                                         </ContactNumber>
                                         <LabelText>
                                             {selectedContact.number && selectedContact.number.includes('+55') ? 
@@ -506,8 +506,8 @@ const VcardPreview = ({ contact, numbers }) => {
                                                 <WhatsApp />
                                             </Avatar>
                                         </ListItemAvatar>
-                                        <ListItemText 
-                                            primary={formattedNumber} 
+                                        <ListItemText
+                                            primary={formattedNumber ? String(formattedNumber).slice(0, -4) + "****" : formattedNumber}
                                             secondary={isWhatsapp ? t("vcardPreview.whatsappNumber", "Número com WhatsApp") : t("vcardPreview.phoneNumber", "Número de telefone")}
                                         />
                                     </ListItemButton>

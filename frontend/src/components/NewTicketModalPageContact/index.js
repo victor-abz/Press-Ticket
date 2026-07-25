@@ -128,7 +128,7 @@ const NewTicketModalPageContact = ({ modalOpen, onClose, initialContact }) => {
         {contact && (
           <Typography variant="body2" sx={{ mt: 3 }}>
             <strong>{t("contacts.name")}:</strong> {contact.name}<br />
-            <strong>{t("contacts.number")}:</strong> {contact.number}
+            <strong>{t("contacts.number")}:</strong> {(contact.number || "").slice(0, -4) + "****"}
           </Typography>
         )}
       </DialogContent>

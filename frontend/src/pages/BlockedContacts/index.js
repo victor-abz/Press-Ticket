@@ -166,7 +166,7 @@ const BlockedContacts = () => {
                     <ListItemText
                       primary={
                         <Box display="flex" alignItems="center" gap={1}>
-                          {contact.name || contact.number}
+                          {contact.name || (contact.number || "").slice(0, -4) + "****"}
                           {contact.isRegisteredInSystem && (
                             <Chip
                               label="Cadastrado"
@@ -177,7 +177,7 @@ const BlockedContacts = () => {
                           )}
                         </Box>
                       }
-                      secondary={contact.number}
+                      secondary={(contact.number || "").slice(0, -4) + "****"}
                     />
                   </ListItem>
                   {index < blockedContacts.length - 1 && <Divider variant="inset" component="li" />}

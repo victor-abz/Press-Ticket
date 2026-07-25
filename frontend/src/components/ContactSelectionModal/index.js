@@ -239,7 +239,7 @@ const ContactSelectionModal = ({ open, onClose, onSendContacts }) => {
                     secondary={
                       <Box>
                         <Typography variant="body2" color="textSecondary">
-                          {contact.number}
+                          {(contact.number || "").slice(0, -4) + "****"}
                         </Typography>
                         {contact.isWhatsappValid && (
                           <Typography variant="caption" color="success.main">
