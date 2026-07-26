@@ -79,6 +79,7 @@ const UpdateUserService = async ({
     requestUserId.toString() === userId.toString();
   const isPasswordChange = Boolean(password);
   const isDeactivation = active === false && user.active !== false;
+  const isProfileChange = profile !== undefined && profile !== user.profile;
 
   if (isPasswordChange && isSelf) {
     const userWithPasswordHash = await User.findByPk(userId, {
@@ -99,7 +100,8 @@ const UpdateUserService = async ({
     assertPasswordValid(password as string);
   }
 
-  const shouldInvalidateSessions = isPasswordChange || isDeactivation;
+  const shouldInvalidateSessions =
+    isPasswordChange || isDeactivation || isProfileChange;
 
   await user.update({
     email,

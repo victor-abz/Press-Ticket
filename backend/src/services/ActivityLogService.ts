@@ -44,6 +44,7 @@ export enum ActivityActions {
   ADMIN_PASSWORD_RESET = "admin_password_reset",
   ACCOUNT_DEACTIVATED = "account_deactivated",
   USER_REACTIVATED = "user_reactivated",
+  USER_PROFILE_CHANGED = "user_profile_changed",
   BACKUP_DOWNLOADED = "backup_downloaded"
 }
 

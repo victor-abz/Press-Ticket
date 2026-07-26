@@ -148,6 +148,17 @@ export const update = async (
     isReactivation = userBeforeUpdate?.active === false;
   }
 
+  let isProfileChange = false;
+  let previousProfile: string | undefined;
+  if (userData.profile !== undefined) {
+    const userBeforeUpdate = await User.findByPk(userId, {
+      attributes: ["profile"]
+    });
+    previousProfile = userBeforeUpdate?.profile;
+    isProfileChange =
+      userBeforeUpdate !== null && userBeforeUpdate.profile !== userData.profile;
+  }
+
   const result = await UpdateUserService({
     userData,
     userId,
@@ -189,6 +200,15 @@ export const update = async (
         userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
         action: ActivityActions.USER_REACTIVATED,
         description: `Admin reativou a conta do usuário ${result.name} (${result.email})`,
+        entityType: EntityTypes.USER,
+        entityId: result.id,
+        ip: clientIp
+      });
+    } else if (isProfileChange) {
+      await createActivityLog({
+        userId: typeof logUserId === "string" ? parseInt(logUserId) : logUserId,
+        action: ActivityActions.USER_PROFILE_CHANGED,
+        description: `Admin alterou o perfil do usuário ${result.name} (${result.email}) de "${previousProfile}" para "${userData.profile}". Sessões invalidadas.`,
         entityType: EntityTypes.USER,
         entityId: result.id,
         ip: clientIp
