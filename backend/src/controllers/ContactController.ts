@@ -17,6 +17,8 @@ import UpdateGroupProfilePicService from "../services/ContactServices/UpdateGrou
 
 import AppError from "../errors/AppError";
 import GetClientIp from "../helpers/GetClientIp";
+import { serializeContact, serializeContacts } from "../helpers/serializeContact";
+import emitMaskedToSockets from "../helpers/emitMaskedToSockets";
 import { getWbot } from "../libs/wbot";
 import Whatsapp from "../models/Whatsapp";
 import {
@@ -277,7 +279,12 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
     status
   });
 
-  return res.json({ contacts, count, hasMore });
+  const serializedContacts = serializeContacts(
+    contacts.map(contact => contact.toJSON()),
+    req.user.profile
+  );
+
+  return res.json({ contacts: serializedContacts, count, hasMore });
 };
 
 export const getContact = async (
@@ -411,10 +418,14 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     }
   });
 
-  const io = getIO();
-  io.emit("contact", {
-    action: "create",
-    contact
+  const contactJson = contact.toJSON ? contact.toJSON() : contact;
+  await emitMaskedToSockets({
+    io: getIO(),
+    event: "contact",
+    buildPayload: profile => ({
+      action: "create",
+      contact: serializeContact(contactJson, profile)
+    })
   });
 
   return res.status(200).json(contact);
@@ -423,7 +434,9 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 export const show = async (req: Request, res: Response): Promise<Response> => {
   const { contactId } = req.params;
   const contact = await ShowContactService(contactId);
-  return res.status(200).json(contact);
+  return res
+    .status(200)
+    .json(serializeContact(contact.toJSON(), req.user.profile));
 };
 
 export const update = async (
@@ -431,6 +444,14 @@ export const update = async (
   res: Response
 ): Promise<Response> => {
   const contactData: ContactData = req.body;
+
+  if (
+    contactData.number !== undefined &&
+    req.user.profile !== "admin" &&
+    req.user.profile !== "masteradmin"
+  ) {
+    throw new AppError("ERR_NO_PERMISSION", 403);
+  }
 
   const schema = Yup.object().shape({
     name: Yup.string()
@@ -470,10 +491,14 @@ export const update = async (
     }
   });
 
-  const io = getIO();
-  io.emit("contact", {
-    action: "update",
-    contact
+  const contactJson = contact.toJSON ? contact.toJSON() : contact;
+  await emitMaskedToSockets({
+    io: getIO(),
+    event: "contact",
+    buildPayload: profile => ({
+      action: "update",
+      contact: serializeContact(contactJson, profile)
+    })
   });
 
   return res.status(200).json(contact);
@@ -580,11 +605,14 @@ export const updateTags = async (
     });
   }
 
-  const io = getIO();
   const contactData = contact?.toJSON ? contact.toJSON() : contact;
-  io.emit("contact", {
-    action: "update",
-    contact: contactData
+  await emitMaskedToSockets({
+    io: getIO(),
+    event: "contact",
+    buildPayload: profile => ({
+      action: "update",
+      contact: contactData ? serializeContact(contactData, profile) : contactData
+    })
   });
 
   return res.status(200).json(contact);
@@ -614,10 +642,14 @@ export const removeTag = async (
     additionalData: { tagId: +tagId }
   });
 
-  const io = getIO();
-  io.emit("contact", {
-    action: "update",
-    contact: contact.toJSON ? contact.toJSON() : contact
+  const contactJson = contact.toJSON ? contact.toJSON() : contact;
+  await emitMaskedToSockets({
+    io: getIO(),
+    event: "contact",
+    buildPayload: profile => ({
+      action: "update",
+      contact: serializeContact(contactJson, profile)
+    })
   });
 
   return res.status(200).json({ message: "Tag removida com sucesso", contact });
