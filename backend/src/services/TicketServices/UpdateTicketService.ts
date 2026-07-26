@@ -5,6 +5,8 @@ import Ticket from "../../models/Ticket";
 import ShowTicketService from "./ShowTicketService";
 import EmitTicketCounterService from "./EmitTicketCounterService";
 import { NotifyQueueUsersService } from "../WbotServices/NotifyQueueUsersService";
+import { withSerializedContact } from "../../helpers/serializeContact";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 import { logger } from "../../utils/logger";
 
 interface TicketData {
@@ -71,13 +73,17 @@ const UpdateTicketService = async ({
     });
   }
 
-  io.to(ticket.status)
-    .to("notification")
-    .to(ticketId.toString())
-    .emit("ticket", {
+  const ticketJson = ticket.toJSON() as unknown as Record<string, unknown>;
+
+  await emitMaskedToSockets({
+    io,
+    rooms: [ticket.status, "notification", ticketId.toString()],
+    event: "ticket",
+    buildPayload: recipientProfile => ({
       action: "update",
-      ticket
-    });
+      ticket: withSerializedContact(ticketJson, recipientProfile)
+    })
+  });
 
   try {
     await EmitTicketCounterService();

@@ -3,6 +3,8 @@ import { getIO } from "../../libs/socket";
 import Contact from "../../models/Contact";
 import ContactCustomField from "../../models/ContactCustomField";
 import { Op } from "sequelize";
+import { serializeContact } from "../../helpers/serializeContact";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 
 interface ExtraInfo {
   name: string;
@@ -89,7 +91,15 @@ const CreateOrUpdateContactService = async ({
       }
       if (Object.keys(updatedData).length) {
         await primary.update(updatedData);
-        io.emit("contact", { action: "update", contact: primary });
+        const primaryJson = primary.toJSON();
+        await emitMaskedToSockets({
+          io,
+          event: "contact",
+          buildPayload: profile => ({
+            action: "update",
+            contact: serializeContact(primaryJson, profile)
+          })
+        });
       }
       return primary;
     }
@@ -106,7 +116,15 @@ const CreateOrUpdateContactService = async ({
       } as unknown as ContactCreateInput,
       { include: [{ model: ContactCustomField, as: "extraInfo" }] }
     );
-    io.emit("contact", { action: "create", contact: created });
+    const createdJson = created.toJSON();
+    await emitMaskedToSockets({
+      io,
+      event: "contact",
+      buildPayload: profile => ({
+        action: "create",
+        contact: serializeContact(createdJson, profile)
+      })
+    });
     return created;
   }
 
@@ -145,7 +163,15 @@ const CreateOrUpdateContactService = async ({
     }
     if (Object.keys(updatedData).length) {
       await contact.update(updatedData);
-      io.emit("contact", { action: "update", contact });
+      const contactJson = contact.toJSON();
+      await emitMaskedToSockets({
+        io,
+        event: "contact",
+        buildPayload: profile => ({
+          action: "update",
+          contact: serializeContact(contactJson, profile)
+        })
+      });
     }
     return contact;
   }
@@ -163,7 +189,15 @@ const CreateOrUpdateContactService = async ({
     } as unknown as ContactCreateInput,
     { include: [{ model: ContactCustomField, as: "extraInfo" }] }
   );
-  io.emit("contact", { action: "create", contact });
+  const newContactJson = contact.toJSON();
+  await emitMaskedToSockets({
+    io,
+    event: "contact",
+    buildPayload: profile => ({
+      action: "create",
+      contact: serializeContact(newContactJson, profile)
+    })
+  });
   return contact;
 };
 

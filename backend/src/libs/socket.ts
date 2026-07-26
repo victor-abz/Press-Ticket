@@ -10,6 +10,7 @@ import { Op } from "sequelize";
 import Contact from "../models/Contact";
 import WhatsApp from "../models/Whatsapp";
 import Queue from "../models/Queue";
+import { withSerializedContact } from "../helpers/serializeContact";
 
 interface TokenPayload {
   id: string;
@@ -93,6 +94,8 @@ export const initIO = (httpServer: Server): void => {
     try {
       const decoded = verify(token, authConfig.secret) as TokenPayload;
       const { id: userId } = decoded;
+
+      socket.data.profile = decoded.profile;
 
       if (!userId) {
         logger.warn("Conexão rejeitada: Token sem userId", {
@@ -339,7 +342,14 @@ export const initIO = (httpServer: Server): void => {
           limit: 50
         });
 
-        socket.emit("ticketList", { tickets });
+        const serializedTickets = tickets.map(ticket =>
+          withSerializedContact(
+            ticket.toJSON() as unknown as Record<string, unknown>,
+            user.profile
+          )
+        );
+
+        socket.emit("ticketList", { tickets: serializedTickets });
       } catch (err) {
         logger.error("Erro ao sincronizar tickets", {
           error: err.message,

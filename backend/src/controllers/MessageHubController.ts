@@ -3,6 +3,8 @@ import { getIO } from "../libs/socket";
 import Contact from "../models/Contact";
 import Ticket from "../models/Ticket";
 import Whatsapp from "../models/Whatsapp";
+import { withSerializedContact } from "../helpers/serializeContact";
+import emitMaskedToSockets from "../helpers/emitMaskedToSockets";
 import CreateHubTicketService from "../services/HubServices/CreateHubTicketService";
 import { SendCardMessageService } from "../services/HubServices/SendCardMessageHubService";
 import { SendCarouselMessageService } from "../services/HubServices/SendCarouselMessageHubService";
@@ -364,14 +366,19 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     channel
   });
 
-  const io = getIO();
-  io.to(ticket.status)
-    .to("notification")
-    .to(ticket.id.toString())
-    .emit("ticket", {
-      action: "update",
-      ticket
-    });
+  const ticketJson = ticket.toJSON() as unknown as Record<string, unknown>;
 
-  return res.status(200).json(ticket);
+  await emitMaskedToSockets({
+    io: getIO(),
+    rooms: [ticket.status, "notification", ticket.id.toString()],
+    event: "ticket",
+    buildPayload: profile => ({
+      action: "update",
+      ticket: withSerializedContact(ticketJson, profile)
+    })
+  });
+
+  return res
+    .status(200)
+    .json(withSerializedContact(ticketJson, req.user.profile));
 };

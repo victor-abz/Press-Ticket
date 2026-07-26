@@ -6,6 +6,8 @@ import Ticket from "../../models/Ticket";
 import Contact from "../../models/Contact";
 import { getIO } from "../../libs/socket";
 import { Poll } from "whatsapp-web.js";
+import { withSerializedContact } from "../../helpers/serializeContact";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 
 interface PollOption {
   name: string;
@@ -94,20 +96,31 @@ class SendPollService {
       });
 
       const io = getIO();
+      const ticketJson = ticket.toJSON() as unknown as Record<string, unknown>;
 
-      io.to(ticket.id.toString())
-        .to(`ticket-${ticket.id}`)
-        .to("notification")
-        .emit(`appMessage`, {
-          action: "create",
-          message,
-          ticket,
-          contact: ticket.contact
-        });
+      await emitMaskedToSockets({
+        io,
+        rooms: [ticket.id.toString(), `ticket-${ticket.id}`, "notification"],
+        event: "appMessage",
+        buildPayload: profile => {
+          const maskedTicket = withSerializedContact(ticketJson, profile);
+          return {
+            action: "create",
+            message,
+            ticket: maskedTicket,
+            contact: maskedTicket.contact
+          };
+        }
+      });
 
-      io.to(ticket.status).to("notification").emit(`ticket`, {
-        action: "update",
-        ticket
+      await emitMaskedToSockets({
+        io,
+        rooms: [ticket.status, "notification"],
+        event: "ticket",
+        buildPayload: profile => ({
+          action: "update",
+          ticket: withSerializedContact(ticketJson, profile)
+        })
       });
 
       return message;

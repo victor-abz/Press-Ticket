@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { getIO } from "../libs/socket";
+import { serializeContact } from "../helpers/serializeContact";
+import emitMaskedToSockets from "../helpers/emitMaskedToSockets";
 
 import AppError from "../errors/AppError";
 
@@ -224,10 +226,14 @@ export const syncTags = async (
 
     const contact = await SyncTagService(data);
 
-    const io = getIO();
-    io.emit("contact", {
-      action: "update",
-      contact
+    const contactJson = contact?.toJSON ? contact.toJSON() : contact;
+    await emitMaskedToSockets({
+      io: getIO(),
+      event: "contact",
+      buildPayload: profile => ({
+        action: "update",
+        contact: contactJson ? serializeContact(contactJson, profile) : contactJson
+      })
     });
 
     return res.status(200).json(contact);

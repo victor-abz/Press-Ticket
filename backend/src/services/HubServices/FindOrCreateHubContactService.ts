@@ -1,6 +1,8 @@
 import { getIO } from "../../libs/socket";
 import Contact from "../../models/Contact";
 import Whatsapp from "../../models/Whatsapp";
+import { serializeContact } from "../../helpers/serializeContact";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 
 export interface HubContact {
   name: string;
@@ -66,9 +68,13 @@ const FindOrCreateContactService = async (
         isGroup: true,
         profilePicUrl: picture
       });
-      io.emit("contact", {
-        action: "update",
-        contact
+      await emitMaskedToSockets({
+        io,
+        event: "contact",
+        buildPayload: profile => ({
+          action: "update",
+          contact: serializeContact(contact as unknown as Parameters<typeof serializeContact>[0], profile)
+        })
       });
     } else {
       await Contact.create({
@@ -78,9 +84,13 @@ const FindOrCreateContactService = async (
         profilePicUrl: picture
       });
 
-      io.emit("contact", {
-        action: "create",
-        contact
+      await emitMaskedToSockets({
+        io,
+        event: "contact",
+        buildPayload: profile => ({
+          action: "create",
+          contact: serializeContact(contact as unknown as Parameters<typeof serializeContact>[0], profile)
+        })
       });
     }
   }
@@ -119,9 +129,13 @@ const FindOrCreateContactService = async (
       number: numberWct || null,
       profilePicUrl: picture
     });
-    io.emit("contact", {
-      action: "update",
-      contact
+    await emitMaskedToSockets({
+      io,
+      event: "contact",
+      buildPayload: profile => ({
+        action: "update",
+        contact: serializeContact(contact as unknown as Parameters<typeof serializeContact>[0], profile)
+      })
     });
     return contactExists;
   }
@@ -138,9 +152,13 @@ const FindOrCreateContactService = async (
     email: numberEm || undefined
   });
 
-  io.emit("contact", {
-    action: "create",
-    contact
+  await emitMaskedToSockets({
+    io,
+    event: "contact",
+    buildPayload: profile => ({
+      action: "create",
+      contact: serializeContact(contact as unknown as Parameters<typeof serializeContact>[0], profile)
+    })
   });
 
   return newContact;

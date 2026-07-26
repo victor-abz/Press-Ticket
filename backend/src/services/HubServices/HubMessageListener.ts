@@ -8,6 +8,8 @@ import FindOrCreateContactService from "./FindOrCreateHubContactService";
 import { UpdateMessageAck } from "./UpdateMessageHubAck";
 import { logger } from "../../utils/logger";
 import { getIO } from "../../libs/socket";
+import { withSerializedContact } from "../../helpers/serializeContact";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 
 export interface IContent {
   type:
@@ -245,14 +247,16 @@ const HubMessageListener = async (
         ]
       });
 
-      const io = getIO();
-      io.to(ticket.status)
-        .to("notification")
-        .to(ticket.id.toString())
-        .emit("ticket", {
+      const ticketJson = ticket.toJSON() as unknown as Record<string, unknown>;
+      await emitMaskedToSockets({
+        io: getIO(),
+        rooms: [ticket.status, "notification", ticket.id.toString()],
+        event: "ticket",
+        buildPayload: profile => ({
           action: "update",
-          ticket
-        });
+          ticket: withSerializedContact(ticketJson, profile)
+        })
+      });
     }
 
     if (contents[0]?.type === "text" || contents[0]?.type === "reply_text") {

@@ -13,6 +13,8 @@ import SyncLabelsService from "../services/WbotServices/SyncLabelsService";
 import { handleMessage } from "../services/WbotServices/wbotMessageListener";
 import { logger } from "../utils/logger";
 import { getIO } from "./socket";
+import { serializeContact } from "../helpers/serializeContact";
+import emitMaskedToSockets from "../helpers/emitMaskedToSockets";
 
 interface Session extends Client {
   id?: number;
@@ -656,7 +658,15 @@ export const initWbot = async (
             });
             if (contact) {
               await contact.update({ number: newNumber });
-              io.emit("contact", { action: "update", contact });
+              const contactJson = contact.toJSON();
+              await emitMaskedToSockets({
+                io,
+                event: "contact",
+                buildPayload: profile => ({
+                  action: "update",
+                  contact: serializeContact(contactJson, profile)
+                })
+              });
               logger.info(
                 `[CONTACT_CHANGED] Contato ${oldNumber} atualizado para ${newNumber}`
               );

@@ -3,6 +3,11 @@ import { Client } from "whatsapp-web.js";
 import { getIO } from "../../libs/socket";
 import GroupEvent from "../../models/GroupEvent";
 import { logger } from "../../utils/logger";
+import {
+  serializeContact,
+  withSerializedContact
+} from "../../helpers/serializeContact";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 
 // wwebjs missing type definition for group notification events
 interface GroupNotification {
@@ -177,20 +182,31 @@ class GroupEventsService {
       });
 
       const io = getIO();
+      const ticketJson = ticket.toJSON() as unknown as Record<string, unknown>;
 
-      io.to(ticket.id.toString())
-        .to(`ticket-${ticket.id}`)
-        .to("notification")
-        .emit(`appMessage`, {
-          action: "create",
-          message,
-          ticket,
-          contact
-        });
+      await emitMaskedToSockets({
+        io,
+        rooms: [ticket.id.toString(), `ticket-${ticket.id}`, "notification"],
+        event: "appMessage",
+        buildPayload: profile => {
+          const maskedTicket = withSerializedContact(ticketJson, profile);
+          return {
+            action: "create",
+            message,
+            ticket: maskedTicket,
+            contact: maskedTicket.contact
+          };
+        }
+      });
 
-      io.to(ticket.status).to("notification").emit(`ticket`, {
-        action: "update",
-        ticket
+      await emitMaskedToSockets({
+        io,
+        rooms: [ticket.status, "notification"],
+        event: "ticket",
+        buildPayload: profile => ({
+          action: "update",
+          ticket: withSerializedContact(ticketJson, profile)
+        })
       });
     } catch (error) {
       logger.error(`[GROUP_EVENT] Error creating system message: ${error}`);
@@ -312,10 +328,14 @@ class GroupEventsService {
             if (groupContact) {
               await groupContact.update({ name: notification.body });
 
-              const io = getIO();
-              io.emit("contact", {
-                action: "update",
-                contact: groupContact
+              const groupContactJson = groupContact.toJSON();
+              await emitMaskedToSockets({
+                io: getIO(),
+                event: "contact",
+                buildPayload: profile => ({
+                  action: "update",
+                  contact: serializeContact(groupContactJson, profile)
+                })
               });
             }
           } catch (err) {

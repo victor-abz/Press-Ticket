@@ -24,6 +24,11 @@ import { debounce } from "../../helpers/Debounce";
 import { decryptValue } from "../../helpers/EncryptionHelper";
 import formatBody from "../../helpers/Mustache";
 import { sanitizeMessageBody } from "../../helpers/sanitizeMessageBody";
+import {
+  serializeContact,
+  withMaskedMessageContacts
+} from "../../helpers/serializeContact";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 import { getIO } from "../../libs/socket";
 import { logger } from "../../utils/logger";
 import CreateContactService from "../ContactServices/CreateContactService";
@@ -1095,8 +1100,15 @@ const handleMessage = async (
 
           try {
             const { getIO } = require("../../libs/socket");
-            const io = getIO();
-            io.emit("contact", { action: "update", contact: groupContact });
+            const groupContactJson = groupContact.toJSON();
+            await emitMaskedToSockets({
+              io: getIO(),
+              event: "contact",
+              buildPayload: profile => ({
+                action: "update",
+                contact: serializeContact(groupContactJson, profile)
+              })
+            });
           } catch (socketErr) {
             logger.warn(`[WBOT_LISTENER] Erro ao emitir socket: ${socketErr}`);
           }
@@ -1577,9 +1589,18 @@ const handleMsgAck = async (msg: WbotMessage, ack: MessageAck) => {
     if (ackToUpdate > currentAck) {
       await messageToUpdate.update({ ack: ackToUpdate });
 
-      io.to(messageToUpdate.ticketId.toString()).emit("appMessage", {
-        action: "update",
-        message: messageToUpdate
+      const messageJson = messageToUpdate.toJSON() as unknown as Record<
+        string,
+        unknown
+      >;
+      await emitMaskedToSockets({
+        io,
+        rooms: [messageToUpdate.ticketId.toString()],
+        event: "appMessage",
+        buildPayload: profile => ({
+          action: "update",
+          message: withMaskedMessageContacts(messageJson, profile)
+        })
       });
     }
 

@@ -4,6 +4,8 @@ import Ticket from "../../models/Ticket";
 import { getWbot, restartWbot } from "../../libs/wbot";
 import { logger } from "../../utils/logger";
 import Whatsapp from "../../models/Whatsapp";
+import { withMaskedMessageContacts } from "../../helpers/serializeContact";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 
 interface Request {
   ticketId: string | number;
@@ -48,9 +50,18 @@ const MarkMessagesAsReadService = async ({
     if (whatsapp.type !== "wwebjs") {
       for (const message of unreadMessages) {
         await message.update({ read: true });
-        io.to(message.ticketId.toString()).emit("appMessage", {
-          action: "update",
-          message
+        const messageJson = message.toJSON() as unknown as Record<
+          string,
+          unknown
+        >;
+        await emitMaskedToSockets({
+          io,
+          rooms: [message.ticketId.toString()],
+          event: "appMessage",
+          buildPayload: profile => ({
+            action: "update",
+            message: withMaskedMessageContacts(messageJson, profile)
+          })
         });
       }
       await ticket.update({ unreadMessages: 0 });
@@ -145,9 +156,18 @@ const MarkMessagesAsReadService = async ({
     for (const message of unreadMessages) {
       await message.update({ read: true, ack: 3 });
 
-      io.to(message.ticketId.toString()).emit("appMessage", {
-        action: "update",
-        message
+      const messageJson = message.toJSON() as unknown as Record<
+        string,
+        unknown
+      >;
+      await emitMaskedToSockets({
+        io,
+        rooms: [message.ticketId.toString()],
+        event: "appMessage",
+        buildPayload: profile => ({
+          action: "update",
+          message: withMaskedMessageContacts(messageJson, profile)
+        })
       });
     }
 

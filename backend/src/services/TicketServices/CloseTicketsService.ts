@@ -3,6 +3,8 @@ import Ticket from "../../models/Ticket";
 import SendWhatsAppMessage from "../WbotServices/SendWhatsAppMessage";
 import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
 import formatBody from "../../helpers/Mustache";
+import { withSerializedContact } from "../../helpers/serializeContact";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 
 interface Request {
   status?: string;
@@ -46,13 +48,19 @@ const CloseTicketsService = async ({
           ticketId: ticket.id
         });
 
-        io.to(ticket.status)
-          .to("notification")
-          .to(ticket.id.toString())
-          .emit("ticket", {
+        const ticketJson = ticket.toJSON() as unknown as Record<
+          string,
+          unknown
+        >;
+        await emitMaskedToSockets({
+          io,
+          rooms: [ticket.status, "notification", ticket.id.toString()],
+          event: "ticket",
+          buildPayload: profile => ({
             action: "update",
-            ticket
-          });
+            ticket: withSerializedContact(ticketJson, profile)
+          })
+        });
       })()
     );
   }

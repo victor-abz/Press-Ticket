@@ -3,6 +3,11 @@ import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
 import Whatsapp from "../../models/Whatsapp";
 import { logger } from "../../utils/logger";
+import {
+  withSerializedContact,
+  withMaskedMessageContacts
+} from "../../helpers/serializeContact";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 
 interface MessageData {
   id: string;
@@ -106,23 +111,43 @@ const CreateMessageService = async (
       }
 
       const io = getIO();
-      io.to(message.ticketId.toString())
-        .to(message.ticket.status)
-        .to("notification")
-        .emit("appMessage", {
-          action: "create",
-          message,
-          ticket: message.ticket,
-          contact: message.ticket.contact
-        });
+      const ticketJson = message.ticket.toJSON() as unknown as Record<
+        string,
+        unknown
+      >;
+      const messageJson = message.toJSON() as unknown as Record<
+        string,
+        unknown
+      >;
 
-      io.to(message.ticket.status)
-        .to("notification")
-        .to(ticketId.toString())
-        .emit("ticket", {
+      await emitMaskedToSockets({
+        io,
+        rooms: [
+          message.ticketId.toString(),
+          message.ticket.status,
+          "notification"
+        ],
+        event: "appMessage",
+        buildPayload: profile => {
+          const serializedTicket = withSerializedContact(ticketJson, profile);
+          return {
+            action: "create",
+            message: withMaskedMessageContacts(messageJson, profile),
+            ticket: serializedTicket,
+            contact: serializedTicket.contact
+          };
+        }
+      });
+
+      await emitMaskedToSockets({
+        io,
+        rooms: [message.ticket.status, "notification", ticketId.toString()],
+        event: "ticket",
+        buildPayload: profile => ({
           action: "update",
-          ticket: message.ticket
-        });
+          ticket: withSerializedContact(ticketJson, profile)
+        })
+      });
     }
 
     return newMessage;

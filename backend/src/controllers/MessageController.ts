@@ -9,6 +9,8 @@ import Contact from "../models/Contact";
 import Message from "../models/Message";
 import MessageReaction from "../models/MessageReaction";
 import Ticket from "../models/Ticket";
+import { withMaskedMessageContacts } from "../helpers/serializeContact";
+import emitMaskedToSockets from "../helpers/emitMaskedToSockets";
 import {
   ActivityActions,
   createActivityLog,
@@ -702,10 +704,15 @@ export const edit = async (req: Request, res: Response): Promise<Response> => {
     logger.error(`Erro ao criar log de edição de mensagem: ${error}`);
   }
 
-  const io = getIO();
-  io.to(message.ticketId.toString()).emit("appMessage", {
-    action: "update",
-    message
+  const messageJson = message.toJSON() as unknown as Record<string, unknown>;
+  await emitMaskedToSockets({
+    io: getIO(),
+    rooms: [message.ticketId.toString()],
+    event: "appMessage",
+    buildPayload: profile => ({
+      action: "update",
+      message: withMaskedMessageContacts(messageJson, profile)
+    })
   });
 
   return res.send();
@@ -744,10 +751,15 @@ export const remove = async (
     logger.error(`Erro ao criar log de exclusão de mensagem: ${error}`);
   }
 
-  const io = getIO();
-  io.to(message.ticketId.toString()).emit("appMessage", {
-    action: "delete",
-    message
+  const messageJson = message.toJSON() as unknown as Record<string, unknown>;
+  await emitMaskedToSockets({
+    io: getIO(),
+    rooms: [message.ticketId.toString()],
+    event: "appMessage",
+    buildPayload: profile => ({
+      action: "delete",
+      message: withMaskedMessageContacts(messageJson, profile)
+    })
   });
 
   return res.send();

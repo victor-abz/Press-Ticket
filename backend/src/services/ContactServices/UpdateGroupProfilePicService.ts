@@ -1,6 +1,8 @@
 import Contact from "../../models/Contact";
 import { getWbot } from "../../libs/wbot";
 import { logger } from "../../utils/logger";
+import { serializeContact } from "../../helpers/serializeContact";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 
 interface Request {
   contactId: number;
@@ -53,10 +55,14 @@ const UpdateGroupProfilePicService = async ({
 
       try {
         const { getIO } = require("../../libs/socket");
-        const io = getIO();
-        io.emit("contact", {
-          action: "update",
-          contact: contact.toJSON()
+        const contactJson = contact.toJSON();
+        await emitMaskedToSockets({
+          io: getIO(),
+          event: "contact",
+          buildPayload: profile => ({
+            action: "update",
+            contact: serializeContact(contactJson, profile)
+          })
         });
       } catch (socketErr) {
         logger.warn(
