@@ -1,7 +1,7 @@
 import axios from "axios";
 import { logger } from "../../utils/logger";
 
-const VALIDATION_URL = "https://api.pressticket.com.br/validate-token";
+const VALIDATION_URL = "https://api.pressticket.com.br/validate-token/";
 
 interface ValidationResult {
   isValid: boolean;
