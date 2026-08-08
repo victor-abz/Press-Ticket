@@ -1,10 +1,11 @@
 import axios from "axios";
 import { writeFile } from "fs";
 import { join } from "path";
-import { promisify } from "util";
 import { Op } from "sequelize";
+import { promisify } from "util";
 
 import {
+  Chat as WbotChat,
   Client,
   MessageAck,
   Contact as WbotContact,
@@ -21,6 +22,7 @@ import Settings from "../../models/Setting";
 import Ticket from "../../models/Ticket";
 
 import { debounce } from "../../helpers/Debounce";
+import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 import { decryptValue } from "../../helpers/EncryptionHelper";
 import formatBody from "../../helpers/Mustache";
 import { sanitizeMessageBody } from "../../helpers/sanitizeMessageBody";
@@ -28,7 +30,6 @@ import {
   serializeContact,
   withMaskedMessageContacts
 } from "../../helpers/serializeContact";
-import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 import { getIO } from "../../libs/socket";
 import { logger } from "../../utils/logger";
 import CreateContactService from "../ContactServices/CreateContactService";
@@ -40,8 +41,8 @@ import FindOrCreateTicketService from "../TicketServices/FindOrCreateTicketServi
 import UpdateTicketService from "../TicketServices/UpdateTicketService";
 import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
 import {
-  incrementMessageCount,
   incrementErrorCount,
+  incrementMessageCount,
   updateLastActivity
 } from "./HealthCheckService";
 
@@ -876,6 +877,59 @@ const isValidMsg = (msg: WbotMessage): boolean => {
   return true;
 };
 
+type ChatLike = Pick<WbotChat, "isGroup" | "unreadCount"> &
+  Partial<Pick<WbotChat, "id" | "name">>;
+
+interface ChatWithFallbackResult {
+  chat: ChatLike;
+  degraded: boolean;
+}
+
+interface WbotMessageRawData {
+  notifyName?: string;
+}
+
+/**
+ * msg.getChat() pode falhar de forma persistente (ex: contatos @lid, ver
+ * issues abertas em wwebjs/whatsapp-web.js). Em vez de abortar o
+ * processamento da mensagem quando isso acontece, degrada para um Chat
+ * derivado dos dados já presentes em `msg`, para que a mensagem ainda
+ * seja persistida.
+ */
+const getChatWithFallback = async (
+  msg: WbotMessage,
+  context: string
+): Promise<ChatWithFallbackResult> => {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const chat = await msg.getChat();
+      return { chat, degraded: false };
+    } catch (err) {
+      if (attempt === 3) {
+        logger.warn(
+          `[WBOT] getChat falhou apos 3 tentativas (${context}): ${err}. Degradando com dados derivados de msg, mensagem sera persistida mesmo assim.`
+        );
+        break;
+      }
+      await new Promise(r => setTimeout(r, 1500 * attempt));
+    }
+  }
+
+  const jid = msg.fromMe ? msg.to : msg.from;
+  const isGroup = jid?.endsWith("@g.us") ?? false;
+  const notifyName = (msg as unknown as { _data?: WbotMessageRawData })._data
+    ?.notifyName;
+
+  return {
+    chat: {
+      isGroup,
+      unreadCount: 0,
+      name: notifyName
+    },
+    degraded: true
+  };
+};
+
 const getSafeContact = async (
   wbot: Session,
   msg: WbotMessage,
@@ -934,8 +988,9 @@ const handleMessage = async (
     }
   }
 
+  const { chat } = await getChatWithFallback(msg, "handleMessage");
+
   {
-    const chat = await msg.getChat();
     let groupContact;
     let baseContact: WbotContact;
 
@@ -992,7 +1047,6 @@ const handleMessage = async (
     where: { key: "CheckMsgIsGroup" }
   });
   if (Settingdb?.value === "enabled") {
-    const chat = await msg.getChat();
     if (
       msg.type === "sticker" ||
       msg.type === "e2e_notification" ||
@@ -1010,8 +1064,6 @@ const handleMessage = async (
     let groupContact: Contact | undefined;
     let userId;
     let queueId;
-
-    const chat = await msg.getChat();
 
     if (msg.fromMe) {
       if (/\u200e/.test(msg.body[0])) return;
@@ -1743,6 +1795,15 @@ const updatePendingMessages = async (whatsappId: number): Promise<void> => {
 
 const wbotMessageListener = async (wbot: Session): Promise<void> => {
   wbot.on("message_create", async msg => {
+    console.log("🔔 MENSAGEM RECEBIDA:", {
+      from: msg.from,
+      body: msg.body?.substring(0, 50),
+      type: msg.type,
+      fromMe: msg.fromMe
+    });
+    console.log("🔔 MENSAGEM RECEBIDA COMPLETA:", {
+      MENSAGEM: msg
+    });
     handleMessage(msg, wbot);
   });
 
