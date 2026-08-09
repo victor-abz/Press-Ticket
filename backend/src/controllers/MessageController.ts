@@ -1,16 +1,16 @@
 import { Request, Response } from "express";
+import emitMaskedToSockets from "../helpers/emitMaskedToSockets";
 import GetClientIp from "../helpers/GetClientIp";
-import { validateId } from "../helpers/validateId";
 import GetTicketWbot from "../helpers/GetTicketWbot";
+import { withMaskedMessageContacts } from "../helpers/serializeContact";
 import SerializeWbotMsgId from "../helpers/SerializeWbotMsgId";
 import SetTicketMessagesAsRead from "../helpers/SetTicketMessagesAsRead";
+import { validateId } from "../helpers/validateId";
 import { getIO } from "../libs/socket";
 import Contact from "../models/Contact";
 import Message from "../models/Message";
 import MessageReaction from "../models/MessageReaction";
 import Ticket from "../models/Ticket";
-import { withMaskedMessageContacts } from "../helpers/serializeContact";
-import emitMaskedToSockets from "../helpers/emitMaskedToSockets";
 import {
   ActivityActions,
   createActivityLog,
@@ -594,7 +594,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 
   let messageId: string | undefined;
 
-  if (medias) {
+  if (medias.length > 0) {
     const mediaMessages = await Promise.all(
       medias.map(async (media: Express.Multer.File) => {
         const sentMessage = await SendWhatsAppMedia({
