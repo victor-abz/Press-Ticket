@@ -607,7 +607,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
         return sentMessage;
       })
     );
-    if (mediaMessages && mediaMessages.length > 0) {
+    if (mediaMessages && mediaMessages.length > 0 && mediaMessages[0]) {
       messageId = mediaMessages[0].id.id;
     }
 

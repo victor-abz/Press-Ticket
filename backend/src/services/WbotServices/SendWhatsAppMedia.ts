@@ -114,7 +114,7 @@ const SendWhatsAppMedia = async ({
   body,
   mentions,
   sendAsDocument: forceSendAsDocument
-}: Request): Promise<WbotMessage> => {
+}: Request): Promise<WbotMessage | undefined> => {
   let finalMediaPath = media.path;
   let shouldDeleteCompressed = false;
 
@@ -287,7 +287,7 @@ const SendWhatsAppMedia = async ({
     ) {
       mimeType = "audio/ogg";
     }
-    let sentMessage;
+    let sentMessage: WbotMessage | undefined;
     let sendAsDocument = false;
 
     if (forceSendAsDocument) {
@@ -399,6 +399,30 @@ const SendWhatsAppMedia = async ({
       lastMessage: body || media.originalname || media.filename
     });
     await ticket.reload();
+
+    if (!sentMessage?.id?.id) {
+      // wwebjs pode resolver sendMessage() sem lançar exceção, mas sem
+      // conseguir casar a mídia enviada com o objeto de retorno (visto
+      // em contatos @lid). O envio real ao WhatsApp acontece mesmo assim —
+      // o eco fromMe:true em wbotMessageListener/handleMessage é quem
+      // efetivamente persiste a mensagem no banco, então aqui apenas
+      // registramos o caminho degradado em vez de quebrar com TypeError.
+      logger.warn(
+        `[SendWhatsAppMedia] sendMessage retornou sem id utilizável para contato @lid; envio real deve ter ocorrido e sera reconciliado pelo eco fromMe em wbotMessageListener`,
+        {
+          ticketId: ticket.id,
+          mediaType: media.mimetype,
+          sendAsDocument
+        }
+      );
+
+      fs.unlinkSync(media.path);
+      if (shouldDeleteCompressed && fs.existsSync(finalMediaPath)) {
+        fs.unlinkSync(finalMediaPath);
+      }
+
+      return undefined;
+    }
 
     let savedFilename = media.filename;
     let downloadSuccess = false;

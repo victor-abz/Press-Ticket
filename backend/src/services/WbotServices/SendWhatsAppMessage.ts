@@ -70,7 +70,7 @@ const SendWhatsAppMessage = async ({
   ticket,
   quotedMsg,
   mentions
-}: Request): Promise<WbotMessage> => {
+}: Request): Promise<WbotMessage | undefined> => {
   const wbot = await GetTicketWbot(ticket);
   const contactNumber = ticket.contact.number!;
   const groupId = contactNumber.includes("@")
@@ -261,7 +261,7 @@ const SendWhatsAppMessage = async ({
 
   try {
     const payload = formatBody(body, ticket);
-    let sentMessage: WbotMessage;
+    let sentMessage: WbotMessage | undefined;
     let lidError = false;
 
     const preFn = new Function(
@@ -320,8 +320,12 @@ const SendWhatsAppMessage = async ({
     await ticket.update({ lastMessage: body });
     await ticket.reload();
 
+    if (!sentMessage?.id?.id) {
+      return undefined;
+    }
+
     const messageData = {
-      id: sentMessage!.id.id,
+      id: sentMessage.id.id,
       ticketId: ticket.id,
       contactId: undefined,
       body: body,
@@ -341,7 +345,7 @@ const SendWhatsAppMessage = async ({
       logger.error(`Erro ao salvar mensagem: ${err}`);
     }
 
-    return sentMessage!;
+    return sentMessage;
   } catch (err) {
     logger.error(`Erro ao enviar mensagem: ${err}`);
     throw new AppError("ERR_SENDING_WAPP_MSG");
