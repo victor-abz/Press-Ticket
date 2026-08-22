@@ -1,9 +1,32 @@
 import {
+	CheckCircle,
+	CropFree,
+	DeleteOutline,
+	Edit,
+	Email,
+	Facebook,
+	GridView,
+	Instagram,
+	PlayCircleOutline,
+	QrCode2,
+	SignalCellular4Bar,
+	SignalCellularConnectedNoInternet0Bar,
+	SignalCellularConnectedNoInternet2Bar,
+	Sms,
+	SyncOutlined,
+	TableRows,
+	Telegram,
+	WhatsApp
+} from "@mui/icons-material";
+import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import {
 	Box,
 	Button,
 	Card,
-	CardContent,
 	CardActions,
+	CardContent,
 	CircularProgress,
 	Grid,
 	IconButton,
@@ -19,54 +42,30 @@ import {
 	Tooltip,
 	tooltipClasses,
 	Typography,
+	Zoom,
 } from "@mui/material";
 import { green } from "@mui/material/colors";
 import { styled } from '@mui/material/styles';
-import { Zoom } from "@mui/material"
-import {
-  CheckCircle,
-  CropFree,
-  DeleteOutline,
-  Edit,
-  Email,
-  Facebook,
-  GridView,
-  Instagram,
-  PlayCircleOutline,
-  QrCode2,
-  SignalCellular4Bar,
-  SignalCellularConnectedNoInternet0Bar,
-  SignalCellularConnectedNoInternet2Bar,
-  Sms,
-  SyncOutlined,
-  TableRows,
-  Telegram,
-  WhatsApp
-} from "@mui/icons-material";
-import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import VisibilityIcon from "@mui/icons-material/Visibility"; 
 import { format, parseISO } from "date-fns";
 import { Fragment, useCallback, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import ToastManager from "../../utils/toastManager";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import ConnectionMethodModal from "../../components/ConnectionMethodModal";
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
 import MainHeaderButtonsWrapper from "../../components/MainHeaderButtonsWrapper";
+import NotificameHubModal from "../../components/NotificameHubModal";
 import QrcodeModal from "../../components/QrcodeModal";
-import ConnectionMethodModal from "../../components/ConnectionMethodModal";
 import TableRowSkeleton from "../../components/TableRowSkeleton";
 import Title from "../../components/Title";
 import WhatsAppModal from "../../components/WhatsAppModal";
-import NotificameHubModal from "../../components/NotificameHubModal";
-import { AuthContext } from "../../context/Auth/AuthContext";
 import { WhatsAppsContext } from "../../context/WhatsApp/WhatsAppsContext";
 import toastError from "../../errors/toastError";
 import api from "../../services/api";
 import openSocket from "../../services/socket-io";
+import ToastManager from "../../utils/toastManager";
 
 const MainPaper = styled(Paper)(({ theme }) => ({
 	flex: 1,
@@ -192,7 +191,6 @@ const CustomToolTip = ({ title, content, children }) => {
 const Channels = () => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { user } = useContext(AuthContext);
 	const { whatsApps, loading, fetchWhatsApps } = useContext(WhatsAppsContext);
 	const [whatsAppModalOpen, setWhatsAppModalOpen] = useState(false);
 	const [notificameHubModalOpen, setNotificameHubModalOpen] = useState(false);

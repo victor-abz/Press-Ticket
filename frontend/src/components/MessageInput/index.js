@@ -1,19 +1,4 @@
 import {
-  Box,
-  CircularProgress,
-  ClickAwayListener,
-  FormControlLabel,
-  IconButton,
-  InputBase,
-  Menu,
-  MenuItem,
-  Paper,
-  Switch,
-  Tooltip,
-  Fade
-} from "@mui/material";
-import { styled } from "@mui/material/styles";
-import {
   AttachFile,
   CheckCircleOutline,
   Clear,
@@ -27,33 +12,47 @@ import {
   MoreVert,
   Send
 } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
+import FormatBoldIcon from "@mui/icons-material/FormatBold";
+import FormatItalicIcon from "@mui/icons-material/FormatItalic";
+import StrikethroughSIcon from "@mui/icons-material/StrikethroughS";
+import {
+  Box,
+  CircularProgress,
+  ClickAwayListener,
+  Fade,
+  FormControlLabel,
+  IconButton,
+  InputBase,
+  Menu,
+  MenuItem,
+  Paper,
+  Switch,
+  Tooltip
+} from "@mui/material";
+import { styled, useTheme } from "@mui/material/styles";
 import EmojiPicker, { Theme as EmojiTheme } from 'emoji-picker-react';
 import MicRecorder from "mic-recorder-to-mp3";
 import {
+  useCallback,
   useContext,
   useEffect,
   useRef,
-  useState,
-  useCallback
+  useState
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { EditMessageContext } from "../../context/EditingMessage/EditingMessageContext";
 import { ReplyMessageContext } from "../../context/ReplyingMessage/ReplyingMessageContext";
-import UploadModal from "../UploadModal";
-import AttachmentMenu from "../AttachmentMenu";
-import PollCreator from "../PollCreator";
-import LocationSendModal from "../LocationSendModal";
 import toastError from "../../errors/toastError";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import api from "../../services/api";
 import openSocket from "../../services/socket-io";
+import AttachmentMenu from "../AttachmentMenu";
+import LocationSendModal from "../LocationSendModal";
+import PollCreator from "../PollCreator";
+import UploadModal from "../UploadModal";
 import RecordingTimer from "./RecordingTimer";
-import FormatBoldIcon from "@mui/icons-material/FormatBold";
-import FormatItalicIcon from "@mui/icons-material/FormatItalic";
-import StrikethroughSIcon from "@mui/icons-material/StrikethroughS";
 
 const Mp3Recorder = new MicRecorder({ bitRate: 128 });
 
@@ -781,7 +780,7 @@ const MessageInput = ({ ticketStatus }) => {
 
   const handleSendMultipleMessages = async (parts, originalMessage) => {
     setLoading(true);
-    
+
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       
@@ -814,7 +813,7 @@ const MessageInput = ({ ticketStatus }) => {
         } else {
           response = await api.post(`/hub-message/${ticketId}`, message);
         }
-        
+
         if (response && response.data) {
           const messageData = {
             ...message,
@@ -855,7 +854,7 @@ const MessageInput = ({ ticketStatus }) => {
         break;
       }
     }
-    
+
     setLoading(false);
     setReplyingMessage(null);
     
@@ -894,7 +893,7 @@ const MessageInput = ({ ticketStatus }) => {
     files.forEach((media) => {
       formData.append("medias", media);
     });
-    
+
     if (captionText) {
       formData.append("body", captionText);
     } else {
@@ -904,9 +903,9 @@ const MessageInput = ({ ticketStatus }) => {
 
     try {
       if (channelType === "wwebjs") {
-        await api.post(`/messages/${ticketId}`, formData);
+       await api.post(`/messages/${ticketId}`, formData);
       } else {
-        await api.post(`/hub-message/${ticketId}`, formData);
+       await api.post(`/hub-message/${ticketId}`, formData);
       }
     } catch (err) {
       toastError(err, t);
@@ -959,15 +958,15 @@ const MessageInput = ({ ticketStatus }) => {
         ? `*${user?.name}:*\n${inputMessage.trim()}`
         : inputMessage.trim(),
       quotedMsg: replyingMessage,
-      mentions: mentionsInText.length > 0 
-        ? mentionsInText 
+      mentions: mentionsInText.length > 0
+        ? mentionsInText
         : undefined,
     };
     try {
       let response;
       if (editingMessage !== null) {
         response = await api.post(`/messages/edit/${editingMessage.id}`, message);
-        
+
         if (response) {
           const updatedMessage = {
             ...editingMessage,
@@ -1002,7 +1001,7 @@ const MessageInput = ({ ticketStatus }) => {
         } else {
           response = await api.post(`/hub-message/${ticketId}`, message);
         }
-        
+
         if (response && response.data) {
           const messageData = {
             ...message,
@@ -1247,7 +1246,7 @@ const MessageInput = ({ ticketStatus }) => {
       const filename = `${new Date().getTime()}.mp3`;
       formData.append("medias", blob, filename);
       formData.append("body", filename);
-      formData.append("fromMe", true);
+      formData.append("fromMe", true);  
       if (channelType === "wwebjs") {
         await api.post(`/messages/${ticketId}`, formData);
       } else {
