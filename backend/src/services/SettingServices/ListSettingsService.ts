@@ -1,11 +1,16 @@
 import { decryptValue } from "../../helpers/EncryptionHelper";
 import Setting from "../../models/Setting";
 
-const ListSettingsService = async (): Promise<object[]> => {
+interface SafeSetting {
+  key: string;
+  value: string;
+}
+
+const ListSettingsService = async (): Promise<SafeSetting[]> => {
   const settings = await Setting.findAll();
 
   return settings.map(s => {
-    const json = s.toJSON() as { key: string; value: string };
+    const json = s.toJSON() as SafeSetting;
     if (json.value?.startsWith("enc:v1:")) {
       try {
         json.value = decryptValue(json.value);
