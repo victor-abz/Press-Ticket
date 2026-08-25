@@ -1100,7 +1100,9 @@ const messages = {
           deleted: "Mensagem apagada",
           edited: "Editada",
           today: "Hoje",
-          yesterday: "Ontem"
+          yesterday: "Ontem",
+          degradedMedia: "Prévia",
+          degradedMediaTooltip: "Esta mídia não pôde ser baixada em qualidade original. Exibindo uma prévia de baixa resolução."
         }
       },
       messagesInput: {

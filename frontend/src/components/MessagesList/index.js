@@ -13,7 +13,13 @@ import {
   PushPin,
   Star,
 } from "@mui/icons-material";
-import { Box, CircularProgress, IconButton, styled } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  IconButton,
+  styled,
+  Tooltip,
+} from "@mui/material";
 import { blue, red } from "@mui/material/colors";
 
 import { useTheme } from "@mui/material/styles";
@@ -288,6 +294,31 @@ const MessageTimestamp = styled("span")(({ theme }) => ({
   justifyContent: "flex-end",
   gap: "2px",
   minWidth: "40px",
+}));
+
+const DegradedMediaBadge = styled("span")(({ theme }) => ({
+  display: "inline-flex",
+  alignItems: "center",
+  alignSelf: "flex-start",
+  marginTop: 4,
+  marginBottom: 2,
+  padding: "1px 8px",
+  borderRadius: 10,
+  fontSize: 11,
+  fontWeight: 500,
+  textTransform: "uppercase",
+  letterSpacing: "0.3px",
+  color: theme.palette.mode === "dark" ? "#ffcc80" : "#e65100",
+  backgroundColor:
+    theme.palette.mode === "dark"
+      ? "rgba(255, 152, 0, 0.15)"
+      : "rgba(255, 152, 0, 0.12)",
+  border: `1px solid ${
+    theme.palette.mode === "dark"
+      ? "rgba(255, 152, 0, 0.4)"
+      : "rgba(230, 81, 0, 0.3)"
+  }`,
+  cursor: "default",
 }));
 
 const DownloadMedia = styled("div")(({ theme }) => ({
@@ -1008,6 +1039,22 @@ const MessagesList = ({ ticketId, isGroup, ticket, onClick }) => {
           </span>
         ))}
       </span>
+    );
+  };
+
+  const renderDegradedMediaBadge = (message) => {
+    if (!message?.isDegradedMedia || !message?.mediaUrl) return null;
+
+    return (
+      <Tooltip
+        title={t("messagesList.message.degradedMediaTooltip")}
+        arrow
+        placement="top"
+      >
+        <DegradedMediaBadge>
+          {t("messagesList.message.degradedMedia")}
+        </DegradedMediaBadge>
+      </Tooltip>
     );
   };
 
@@ -2192,6 +2239,7 @@ const MessagesList = ({ ticketId, isGroup, ticket, onClick }) => {
                     message.mediaType === "vcard" ||
                     message.mediaType === "multi_vcard") &&
                     checkMessageMedia(message)}
+                  {renderDegradedMediaBadge(message)}
                   <MessageItem message={message}>
                     {message.quotedMsg && (
                       <div style={{ marginBottom: "8px" }}>
@@ -2293,6 +2341,7 @@ const MessagesList = ({ ticketId, isGroup, ticket, onClick }) => {
                   message.mediaType === "vcard" ||
                   message.mediaType === "multi_vcard") &&
                   checkMessageMedia(message)}
+                {renderDegradedMediaBadge(message)}
                 <MessageItem message={message}>
                   {message.quotedMsg && (
                     <div style={{ marginBottom: "8px" }}>

@@ -23,6 +23,7 @@ interface MessageData {
   mimetype?: string;
   messageType?: string;
   filename?: string;
+  isDegradedMedia?: boolean;
 }
 interface Request {
   messageData: MessageData;

@@ -5,9 +5,10 @@ import { Op } from "sequelize";
 import { promisify } from "util";
 
 import {
-  Chat as WbotChat,
   Client,
   MessageAck,
+  MessageMedia,
+  Chat as WbotChat,
   Contact as WbotContact,
   Message as WbotMessage
 } from "whatsapp-web.js";
@@ -26,6 +27,11 @@ import emitMaskedToSockets from "../../helpers/emitMaskedToSockets";
 import { decryptValue } from "../../helpers/EncryptionHelper";
 import formatBody from "../../helpers/Mustache";
 import { sanitizeMessageBody } from "../../helpers/sanitizeMessageBody";
+import {
+  MediaDownloadError,
+  MediaType,
+  downloadAndDecryptMedia
+} from "../../helpers/whatsappMediaDecrypt";
 import {
   serializeContact,
   withMaskedMessageContacts
@@ -145,6 +151,177 @@ const verifyRevoked = async (msgBody?: string): Promise<void> => {
   }
 };
 
+interface DownloadMediaResult {
+  media: MessageMedia;
+  degraded: boolean;
+}
+
+const SUPPORTED_MANUAL_DECRYPT_TYPES: ReadonlySet<string> = new Set([
+  "image",
+  "video",
+  "audio",
+  "ptt",
+  "document",
+  "sticker"
+]);
+
+const downloadMediaWithFallback = async (
+  msg: WbotMessage,
+  context: string
+): Promise<DownloadMediaResult | null> => {
+  try {
+    const media = await msg.downloadMedia();
+    if (media?.data) {
+      return { media, degraded: false };
+    }
+  } catch (err) {
+    logger.warn(
+      `[WBOT] downloadMedia falhou (${context}) para mensagem ${msg.id?.id || "unknown"}: ${err}. Tentando fallback via decriptacao manual.`
+    );
+  }
+
+  const rawData = (msg as unknown as { _data?: WbotMessageRawData })._data;
+
+  if (
+    rawData?.directPath &&
+    rawData?.mediaKey &&
+    rawData?.type &&
+    SUPPORTED_MANUAL_DECRYPT_TYPES.has(rawData.type)
+  ) {
+    try {
+      const decrypted = await downloadAndDecryptMedia({
+        directPath: rawData.directPath,
+        mediaKey: rawData.mediaKey,
+        type: rawData.type as MediaType
+      });
+
+      logger.info(
+        `[WBOT] Midia recuperada via decriptacao manual (directPath/mediaKey) para mensagem ${msg.id?.id || "unknown"} (${context}).`
+      );
+
+      return {
+        media: new MessageMedia(
+          rawData.mimetype || "application/octet-stream",
+          decrypted.toString("base64"),
+          rawData.filename || null,
+          rawData.size || null
+        ),
+        degraded: false
+      };
+    } catch (err) {
+      if (err instanceof MediaDownloadError) {
+        const isFormatValidationError = err.message.includes(
+          "formato inesperado"
+        );
+        const reason = isFormatValidationError
+          ? "directPath invalido (falha de validacao de formato)"
+          : "erro de rede/HTTP, provavel directPath expirado";
+
+        logger.warn(
+          `[WBOT] Decriptacao manual falhou por ${reason} para mensagem ${msg.id?.id || "unknown"} (${context}): ${err.message}. Tentando fallback via msg._data.body.`
+        );
+      } else {
+        logger.warn(
+          `[WBOT] Decriptacao manual falhou (falha genuina de decriptacao/MAC/tipo) para mensagem ${msg.id?.id || "unknown"} (${context}): ${err}. Tentando fallback via msg._data.body.`
+        );
+      }
+    }
+  }
+
+  if (rawData?.body && rawData?.mimetype) {
+    logger.warn(
+      `[WBOT] Usando fallback _data.body (base64 bruto, API interna nao documentada da lib) para mensagem ${msg.id?.id || "unknown"} (${context}).`
+    );
+    return {
+      media: new MessageMedia(
+        rawData.mimetype,
+        rawData.body,
+        rawData.filename || null,
+        rawData.size || null
+      ),
+      degraded: true
+    };
+  }
+
+  logger.warn(
+    `[WBOT] downloadMedia sem fallback disponivel para mensagem ${msg.id?.id || "unknown"} (${context}). Mensagem sera persistida sem midia.`
+  );
+  return null;
+};
+
+const persistMediaMessageWithoutFile = async (
+  msg: WbotMessage,
+  ticket: Ticket,
+  contact: Contact,
+  quotedMsg: Message | null
+): Promise<Message> => {
+  const messageData = {
+    id: msg.id.id,
+    ticketId: ticket.id,
+    contactId: msg.fromMe ? undefined : contact.id,
+    body: msg.body
+      ? sanitizeMessageBody(msg.body)
+      : "[Mídia indisponível: falha ao baixar do WhatsApp]",
+    fromMe: msg.fromMe,
+    read: msg.fromMe,
+    quotedMsgId: quotedMsg?.id,
+    userId: ticket.userId
+  };
+
+  const existingMessage = await Message.findByPk(messageData.id);
+  if (existingMessage) {
+    const messageAge =
+      Date.now() - new Date(existingMessage.createdAt).getTime();
+    if (messageAge < 5000) {
+      return existingMessage;
+    }
+  }
+
+  try {
+    const newMessage = await CreateMessageService({ messageData });
+
+    const FormatLastMessage =
+      require("../../helpers/FormatLastMessage").default;
+    const formattedLastMessage = FormatLastMessage({
+      body: messageData.body,
+      messageType: msg.type,
+      fromMe: msg.fromMe
+    });
+
+    await ticket.update({ lastMessage: formattedLastMessage });
+    await ticket.reload();
+
+    return newMessage;
+  } catch (error) {
+    logger.error(`Erro ao salvar mensagem sem mídia (fallback): ${error}`);
+    return new Promise((resolve, reject) => {
+      setTimeout(async () => {
+        try {
+          const newMessage = await CreateMessageService({ messageData });
+
+          const FormatLastMessage =
+            require("../../helpers/FormatLastMessage").default;
+          const formattedLastMessage = FormatLastMessage({
+            body: messageData.body,
+            messageType: msg.type,
+            fromMe: msg.fromMe
+          });
+
+          await ticket.update({ lastMessage: formattedLastMessage });
+          await ticket.reload();
+
+          resolve(newMessage);
+        } catch (retryError) {
+          logger.error(
+            `Erro ao salvar mensagem sem mídia (fallback, retry): ${retryError}`
+          );
+          reject(retryError);
+        }
+      }, 1000);
+    });
+  }
+};
+
 const verifyMediaMessage = async (
   msg: WbotMessage,
   ticket: Ticket,
@@ -152,11 +329,16 @@ const verifyMediaMessage = async (
 ): Promise<Message> => {
   const quotedMsg = await verifyQuotedMessage(msg);
 
-  const media = await msg.downloadMedia();
+  const downloadResult = await downloadMediaWithFallback(
+    msg,
+    "verifyMediaMessage"
+  );
 
-  if (!media) {
-    throw new Error("ERR_WAPP_DOWNLOAD_MEDIA");
+  if (!downloadResult) {
+    return persistMediaMessageWithoutFile(msg, ticket, contact, quotedMsg);
   }
+
+  const { media } = downloadResult;
 
   if (!media.filename) {
     const ext = media.mimetype.split("/")[1].split(";")[0];
@@ -230,7 +412,8 @@ const verifyMediaMessage = async (
     quotedMsgId: quotedMsg?.id,
     albumId: albumId,
     userId: ticket.userId,
-    fileSize: fileSize
+    fileSize: fileSize,
+    isDegradedMedia: downloadResult.degraded
   };
 
   const existingMessage = await Message.findByPk(messageData.id);
@@ -887,15 +1070,15 @@ interface ChatWithFallbackResult {
 
 interface WbotMessageRawData {
   notifyName?: string;
+  body?: string;
+  mimetype?: string;
+  filename?: string;
+  size?: number;
+  directPath?: string;
+  mediaKey?: string;
+  type?: string;
 }
 
-/**
- * msg.getChat() pode falhar de forma persistente (ex: contatos @lid, ver
- * issues abertas em wwebjs/whatsapp-web.js). Em vez de abortar o
- * processamento da mensagem quando isso acontece, degrada para um Chat
- * derivado dos dados já presentes em `msg`, para que a mensagem ainda
- * seja persistida.
- */
 const getChatWithFallback = async (
   msg: WbotMessage,
   context: string
@@ -1795,15 +1978,6 @@ const updatePendingMessages = async (whatsappId: number): Promise<void> => {
 
 const wbotMessageListener = async (wbot: Session): Promise<void> => {
   wbot.on("message_create", async msg => {
-    console.log("🔔 MENSAGEM RECEBIDA:", {
-      from: msg.from,
-      body: msg.body?.substring(0, 50),
-      type: msg.type,
-      fromMe: msg.fromMe
-    });
-    console.log("🔔 MENSAGEM RECEBIDA COMPLETA:", {
-      MENSAGEM: msg
-    });
     handleMessage(msg, wbot);
   });
 

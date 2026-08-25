@@ -86,6 +86,10 @@ class Message extends Model<
   @Column(DataType.BOOLEAN)
   isPinned: CreationOptional<boolean>;
 
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  isDegradedMedia: CreationOptional<boolean>;
+
   @CreatedAt
   @Column(DataType.DATE(6))
   declare createdAt: CreationOptional<Date>;
